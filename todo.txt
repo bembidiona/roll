@@ -1,0 +1,7 @@
+- guardar imagen
+- cargar imagen
+- gomita de borrar
+- varios timbres? colores
+
+BUG: no pinta bien si se mueve para la izquierda
+BUG: pinta hyper mal si esta rotado

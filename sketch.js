@@ -1,5 +1,7 @@
 ﻿var trainX = 0;
 var speedX = 5;
+var trainR = 0;
+var speedR = 5;
 var sliderX;
 var sliderR;
 
@@ -10,41 +12,58 @@ var firstNode = false;
 var jumpTest = false;
 var jumpTestOld = false;
 
-var W;
-var H;
+
 
 var cBg = 255;
 var cLines = 0;
 var cPlayer = "#FF0000";
+var cUIBg = 100;
 
 var oscilators = [];
 var oscilatorsFreq = [];
-var polyNum = 5; 
+var polyNum = 4; 
+
+var uiWidth = 80;
+var margen = 10;
+
+var canvasWidth;
+var canvasHeight;
 
 
 function setup() {  	
 
 	createCanvas(windowWidth, windowHeight);
 
-	pg0 = createGraphics(windowWidth, windowHeight);
-	pg1 = createGraphics(windowWidth, windowHeight);
-	pg2 = createGraphics(windowWidth, windowHeight);
+	canvasWidth = windowWidth - uiWidth;
+	canvasHeight = windowHeight;
+
+	pg0 = createGraphics(canvasWidth, canvasHeight);
+	pg1 = createGraphics(canvasWidth, canvasHeight);
+	pg2 = createGraphics(canvasWidth, canvasHeight);
 
 	pg1.background(cBg);
-	//pg1.rect(0,0,windowWidth,windowHeight);
+	pg1.stroke(210);
+	for (var i=0; i < pg1.width; i+= 100){
+		pg1.line(i, 0, i, canvasHeight);
+	}
+	pg1.stroke(150);
+	for (var i=0; i < pg1.height; i+= 50){
+		pg1.line(0, i, canvasWidth, i);
+	} 
+
 	pg0 = pg2 = pg1;
 
-	pg1.strokeWeight(5);
-	noFill();
-	stroke(cLines)
+	pg1.strokeWeight(4);
+	pg1.noFill();
+	pg1.stroke(cLines)
 
-	sliderX = createSlider(-6, 6, 0);
-  	sliderX.position(10, 10);
-  	sliderX.style('width', '80px');
+	sliderX = createSlider(-600, 600, 200);
+  	sliderX.position(margen, margen);
+  	sliderX.style('width', '60px');
 
-  	sliderR = createSlider(-180, 180, 0);
-  	sliderR.position(10, 30);
-  	sliderR.style('width', '80px');
+  	sliderR = createSlider(-200, 200, 0);
+  	sliderR.position(margen, margen*3);
+  	sliderR.style('width', '60px');
 
 
   	angleMode(DEGREES);
@@ -63,15 +82,15 @@ function draw() {
 	pg0 = pg2 = pg1;
 
 
-	translate(windowWidth/2, windowHeight/2);
-	rotate(sliderR.value());
-	translate(-windowWidth/2, -windowHeight/2);
+	translate(canvasWidth/2, canvasHeight/2);
+	rotate(trainR);
+	translate(-canvasWidth/2, -canvasHeight/2);
 
-	image(pg0, -windowWidth + trainX, 0);
+	image(pg0, -canvasWidth + trainX, 0);
 	image(pg1, 0 + trainX, 0);
-	image(pg2, windowWidth + trainX, 0);	
+	image(pg2, canvasWidth + trainX, 0);	
   	
-	if (mouseIsPressed){
+	if (mouseIsPressed && mouseX > uiWidth){
 
 		var pointX;		
 
@@ -80,7 +99,7 @@ function draw() {
 			jumpTest = true;
 		}
 		else {
-			pointX = windowWidth - trainX + mouseX;
+			pointX = canvasWidth - trainX + mouseX;
 			jumpTest = false;
 		}
 		
@@ -99,31 +118,38 @@ function draw() {
 	}
 	
 	if(sliderX.value() > 0){
-		if(trainX < windowWidth) trainX += speedX;
+		if(trainX < canvasWidth) trainX += speedX;
 		else trainX = 0;
 	}
 	if (sliderX.value() < 0){
-		if(trainX > -windowWidth) trainX += speedX;
+		if(trainX > -canvasWidth) trainX += speedX;
 		else trainX = 0;
 	}
 
-	translate(windowWidth/2, windowHeight/2);
-	rotate(-sliderR.value());
-	translate(-windowWidth/2, -windowHeight/2);
+	if(sliderR.value() != 0){		
+		trainR = trainR + sliderR.value()*0.01;
+	}
 
-	
+	translate(canvasWidth/2, canvasHeight/2);
+	rotate(-trainR);
+	translate(-canvasWidth/2, -canvasHeight/2);	
 
-	speedX = sliderX.value();
+	speedX = sliderX.value() * 0.01;
 
 	//draw line
 	stroke(255,0,0);
-	line(windowWidth/2,0,windowWidth/2,windowHeight);
+	line(canvasWidth/2 + uiWidth,0,canvasWidth/2 + uiWidth,canvasHeight);
 	stroke(cLines);
 	//---
 
+	//UI
+	noStroke();
+	fill(cUIBg);
+	rect(0,0,uiWidth,windowHeight);
+
 	//----SOUND
 
-	var listenerImg = get(windowWidth/2 + 10, 0, 5, windowHeight);
+	var listenerImg = get(canvasWidth/2 + uiWidth + 4, 0, 3, canvasHeight);
 	var pix;
 	var safeWait = 0;
 	var voiceNum = 0;
@@ -132,15 +158,15 @@ function draw() {
     	oscilatorsFreq[i] = 0;
     }
 
-	for (var i = windowHeight; i > 0; i--){
+	for (var i = canvasHeight; i > 0; i--){
 		if(safeWait <= 0){
-			pix = listenerImg.get(2,i);
+			pix = listenerImg.get(2,i-1);
 
 			if(pix[1] == 0){
-				safeWait = 100; //safe
+				safeWait = 40; //safe
 
-				var f = windowHeight - i;
-				oscFreq = ( 550 * f ) / windowHeight + 150;
+				var f = canvasHeight - i;
+				oscFreq = ( 550 * f ) / canvasHeight + 150;
 				
 				oscilatorsFreq[voiceNum] = oscFreq;
 				voiceNum++;
@@ -154,11 +180,16 @@ function draw() {
 	for (var i = 0; i < polyNum; i++){
 		oscilators[i].osc.freq(oscilatorsFreq[i]);
 
-		console.log(i);
+		/*if(oscilatorsFreq[i] == 0){
+			oscilators[i].osc.amp(1, 0);
+		}
+		else{
+			oscilators[i].osc.amp(1, 0);
+		}*/
 	}
 
+	console.log(oscilatorsFreq);
 	
-	//oscilators[0].osc.freq(oscilatorsFreq[i]);
 }
 
 function mouseReleased() {
@@ -171,8 +202,40 @@ function Oscilador() {
     this.freq = 220;
     this.oscOn = false;
 
-    this.osc = new p5.SinOsc(220);
+    this.osc = new p5.SqrOsc(220);
     this.osc.start();    
+
+
+    /*this.start = function() {
+    	if(!this.oscOn){
+    		oscOn = true;
+    		this.osc.amp(1, 0);
+    	}
+    }
+
+    this.stop = function() {
+    	if(this.oscOn){
+    		oscOn = false;
+    		this.osc.amp(0, 0);
+    	}
+    }*/
+}
+
+function Boton() {
+    this.x;
+    this.y;
+    this.w;
+    this.h;
+    this.tipo;
+
+    this.osc = new p5.TriOsc(220);
+    this.osc.start();    
+
+
+    this.display = function() {
+    	
+    }
+
 }
 
 
