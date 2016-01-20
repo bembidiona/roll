@@ -16,7 +16,7 @@ var jumpTestOld = false;
 
 var cBg = 255;
 var cLines = 0;
-var cPlayer = "#FF0000";
+var cPlayer = "#8f0cff";
 var cUIBg = 100;
 
 var oscilators = [];
@@ -29,33 +29,27 @@ var margen = 10;
 var canvasWidth;
 var canvasHeight;
 
+var buttonSize = 40;
+var buttons = [];
+var buttonsTypes = ["paint", "erase", "clear", "stop", "save", "load"];
+var btnImg_paint;
+var btnImg_erase;
+var btnImg_clear;
+var btnImg_stop;
+var btnImg_save;
+var btnImg_load;
+
+var currentTool = "paint";
+
 
 function setup() {  	
 
-	createCanvas(windowWidth, windowHeight);
+	createCanvas(windowWidth, windowHeight, "webgl");
 
 	canvasWidth = windowWidth - uiWidth;
 	canvasHeight = windowHeight;
 
-	pg0 = createGraphics(canvasWidth, canvasHeight);
-	pg1 = createGraphics(canvasWidth, canvasHeight);
-	pg2 = createGraphics(canvasWidth, canvasHeight);
-
-	pg1.background(cBg);
-	pg1.stroke(210);
-	for (var i=0; i < pg1.width; i+= 100){
-		pg1.line(i, 0, i, canvasHeight);
-	}
-	pg1.stroke(150);
-	for (var i=0; i < pg1.height; i+= 50){
-		pg1.line(0, i, canvasWidth, i);
-	} 
-
-	pg0 = pg2 = pg1;
-
-	pg1.strokeWeight(4);
-	pg1.noFill();
-	pg1.stroke(cLines)
+	createMiniCanvases();
 
 	sliderX = createSlider(-600, 600, 200);
   	sliderX.position(margen, margen);
@@ -65,14 +59,24 @@ function setup() {
   	sliderR.position(margen, margen*3);
   	sliderR.style('width', '60px');
 
-
   	angleMode(DEGREES);
+
+  	btnImg_paint = loadImage("img/brush.png");
+	btnImg_erase = loadImage("img/erase.png");
+	btnImg_clear = loadImage("img/clear.png");
+	btnImg_stop = loadImage("img/stop.png");
+	btnImg_save = loadImage("img/save.png");
+	btnImg_load = loadImage("img/brush.png");
 
   
 
   	for (var i=0; i<polyNum; i++) {
     	oscilators.push(new Oscilador());
     	oscilatorsFreq[i] = 0;
+    }
+
+    for (var i=0; i < buttonsTypes.length; i++) {
+    	buttons.push(new Boton(margen, i * (buttonSize + margen) + 200, buttonsTypes[i]));    	
     }
 }
 
@@ -88,7 +92,9 @@ function draw() {
 
 	image(pg0, -canvasWidth + trainX, 0);
 	image(pg1, 0 + trainX, 0);
-	image(pg2, canvasWidth + trainX, 0);	
+	image(pg2, canvasWidth + trainX, 0);
+
+	
   	
 	if (mouseIsPressed && mouseX > uiWidth){
 
@@ -101,6 +107,17 @@ function draw() {
 		else {
 			pointX = canvasWidth - trainX + mouseX;
 			jumpTest = false;
+		}
+
+		if(currentTool == "paint"){
+			pg1.strokeWeight(4);
+			pg1.noFill();
+			pg1.stroke(cLines)
+		}
+		else if(currentTool == "erase"){
+			pg1.strokeWeight(50);
+			pg1.noFill();
+			pg1.stroke(cBg)
 		}
 		
 		pg1.point(pointX, mouseY);
@@ -137,15 +154,20 @@ function draw() {
 	speedX = sliderX.value() * 0.01;
 
 	//draw line
-	stroke(255,0,0);
+	strokeWeight(2);
+	stroke(cPlayer);
 	line(canvasWidth/2 + uiWidth,0,canvasWidth/2 + uiWidth,canvasHeight);
 	stroke(cLines);
 	//---
 
 	//UI
-	noStroke();
-	fill(cUIBg);
-	rect(0,0,uiWidth,windowHeight);
+	/*noStroke();
+	fill(255);
+	rect(0,0,uiWidth,windowHeight);*/
+
+	for (var i=0; i < buttons.length; i++) {
+    	buttons[i].display();    	
+    }
 
 	//----SOUND
 
@@ -187,9 +209,33 @@ function draw() {
 			oscilators[i].osc.amp(1, 0);
 		}*/
 	}
-
-	console.log(oscilatorsFreq);
 	
+	
+}
+
+function createMiniCanvases() {
+	pg0 = createGraphics(canvasWidth, canvasHeight);
+	pg1 = createGraphics(canvasWidth, canvasHeight);
+	pg2 = createGraphics(canvasWidth, canvasHeight);
+
+	pg1.background(cBg);
+	pg1.stroke(220);
+	for (var i=0; i < pg1.width; i+= 100){
+		pg1.line(i, 0, i, canvasHeight);
+	}
+	pg1.stroke(200);
+	for (var i=0; i < pg1.height; i+= 50){
+		pg1.line(0, i, canvasWidth, i);
+	}
+	pg0 = pg2 = pg1;
+}
+
+function mousePressed() {
+  	if(mouseX < uiWidth){
+		for (var i=0; i < buttons.length; i++) {
+	    	buttons[i].checkClick();    	
+	    }
+	}
 }
 
 function mouseReleased() {
@@ -203,37 +249,64 @@ function Oscilador() {
     this.oscOn = false;
 
     this.osc = new p5.SqrOsc(220);
-    this.osc.start();    
-
-
-    /*this.start = function() {
-    	if(!this.oscOn){
-    		oscOn = true;
-    		this.osc.amp(1, 0);
-    	}
-    }
-
-    this.stop = function() {
-    	if(this.oscOn){
-    		oscOn = false;
-    		this.osc.amp(0, 0);
-    	}
-    }*/
+    this.osc.stop();    
 }
 
-function Boton() {
-    this.x;
-    this.y;
-    this.w;
-    this.h;
-    this.tipo;
+function Boton(_x, _y, _tipo) {
+    this.x = _x;
+    this.y = _y; 
+    this.w = buttonSize;
+    this.h = buttonSize;
+    this.tipo = _tipo;   
+    this.icon;
 
-    this.osc = new p5.TriOsc(220);
-    this.osc.start();    
+    if(this.tipo == "paint") this.icon = btnImg_paint;
+    else if(this.tipo == "erase") this.icon = btnImg_erase;
+    else if(this.tipo == "clear") this.icon = btnImg_clear;
+	else if(this.tipo == "stop") this.icon = btnImg_stop;
+	else if(this.tipo == "save") this.icon = btnImg_save;
+    else if(this.tipo == "load") this.icon = btnImg_load;
 
 
     this.display = function() {
-    	
+    	noStroke()
+    	fill(0, 30);
+    	rect(this.x + 5, this.y + 5, this.w, this.h); 
+
+    	if(this.checkMouse()) fill(255,0,0);
+    	else fill(0);
+
+    	rect(this.x, this.y, this.w, this.h);
+
+    	image(this.icon, this.x + buttonSize/2 - this.icon.width/2, this.y + buttonSize/2 - this.icon.height/2);
+    }
+
+    this.checkMouse = function() {
+    	if (this.x < mouseX && mouseX < this.x + this.w && this.y < mouseY && mouseY < this.y + this.h) return true;
+    	else return false;    	
+    }
+
+    this.checkClick = function() {
+    	if(this.checkMouse()){
+    		if(this.tipo == "paint"){
+    			currentTool = this.tipo;
+    		}
+    		else if(this.tipo == "erase"){
+    			currentTool = this.tipo;
+    		}
+    		else if(this.tipo == "clear"){
+    			createMiniCanvases();
+    		}
+    		else if(this.tipo == "stop"){
+    			sliderX.value(0);
+    			sliderR.value(0);
+    			trainX = 0;
+    			trainR = 0;
+    		}
+    		else if(this.tipo == "save"){
+    			saveCanvas("score","png");
+    		}
+    	}	
     }
 
 }
