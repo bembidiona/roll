@@ -1,4 +1,4 @@
-﻿var trainX = 0;
+var trainX = 0;
 var speedX = 5;
 var trainR = 0;
 var speedR = 5;
@@ -31,20 +31,26 @@ var canvasHeight;
 
 var buttonSize = 40;
 var buttons = [];
-var buttonsTypes = ["paint", "erase", "clear", "stop", "save", "load"];
+var buttonsTypes = ["paint", "erase", "clear", "save", "stop"];
 var btnImg_paint;
 var btnImg_erase;
 var btnImg_clear;
 var btnImg_stop;
 var btnImg_save;
-var btnImg_load;
+
 
 var currentTool = "paint";
 
 
+var savingScore = false;
+
+var loadedScore;
+
+
 function setup() {  	
 
-	createCanvas(windowWidth, windowHeight, "webgl");
+	var c = createCanvas(windowWidth, windowHeight, "2d");
+	c.drop(gotFile); 
 
 	canvasWidth = windowWidth - uiWidth;
 	canvasHeight = windowHeight;
@@ -66,7 +72,7 @@ function setup() {
 	btnImg_clear = loadImage("img/clear.png");
 	btnImg_stop = loadImage("img/stop.png");
 	btnImg_save = loadImage("img/save.png");
-	btnImg_load = loadImage("img/brush.png");
+	
 
   
 
@@ -76,7 +82,8 @@ function setup() {
     }
 
     for (var i=0; i < buttonsTypes.length; i++) {
-    	buttons.push(new Boton(margen, i * (buttonSize + margen) + 200, buttonsTypes[i]));    	
+    	if(i <= 3) buttons.push(new Boton(margen, i * (buttonSize + margen) + margen, buttonsTypes[i]));
+    	else buttons.push(new Boton(margen, windowHeight - margen - buttonSize, buttonsTypes[i]));  	
     }
 }
 
@@ -210,6 +217,12 @@ function draw() {
 		}*/
 	}
 	
+	//save
+	if(savingScore){
+		image(pg1, 0, 0,windowWidth, windowHeight);
+		savingScore = false;
+		saveCanvas("score","png");	
+	}
 	
 }
 
@@ -249,7 +262,7 @@ function Oscilador() {
     this.oscOn = false;
 
     this.osc = new p5.SqrOsc(220);
-    this.osc.stop();    
+    this.osc.start();    
 }
 
 function Boton(_x, _y, _tipo) {
@@ -264,8 +277,7 @@ function Boton(_x, _y, _tipo) {
     else if(this.tipo == "erase") this.icon = btnImg_erase;
     else if(this.tipo == "clear") this.icon = btnImg_clear;
 	else if(this.tipo == "stop") this.icon = btnImg_stop;
-	else if(this.tipo == "save") this.icon = btnImg_save;
-    else if(this.tipo == "load") this.icon = btnImg_load;
+	else if(this.tipo == "save") this.icon = btnImg_save;    
 
 
     this.display = function() {
@@ -304,12 +316,37 @@ function Boton(_x, _y, _tipo) {
     			trainR = 0;
     		}
     		else if(this.tipo == "save"){
-    			saveCanvas("score","png");
+    			savingScore = true;    			
     		}
+    		
     	}	
     }
 
 }
+
+function gotFile(file) {  	
+
+	if (file.type === 'image') {    
+		
+		var imgDropped = createImg(file.data);		
+		imgDropped.hide();
+
+		var imgDroppedW = imgDropped.width;
+		var imgDroppedH = imgDropped.height;				
+
+		image(imgDropped, 0, 0, pg1.width, pg1.height);			
+		img = get(0,0,imgDroppedW,imgDroppedH);
+		
+		pg1.image(img, 0, 0, pg1.width, pg1.height);
+
+		pg0 = pg2 = pg1;
+
+	} else {
+		println('Not an image file!');
+	}	
+}
+
+
 
 
 
