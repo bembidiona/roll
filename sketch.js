@@ -1,3 +1,5 @@
+var WEBGL = true;
+
 var trainX = 0;
 var trainR = 0;
 var maxX = 20;
@@ -12,7 +14,7 @@ var firstNode = false;
 var jumpTest = false;
 var jumpTestOld = false;
 
-
+var helpShow = false;
 
 var cBg = 255;
 var cLines = 0;
@@ -32,12 +34,15 @@ var canvasHeight;
 var buttonSize = 40;
 var buttons = [];
 var sliders = [];
-var buttonsTypes = ["paint", "erase", "clear", "save", "stop"];
+
+if(WEBGL) var buttonsTypes = ["paint", "erase", "clear", "help", "stop"];
+else var buttonsTypes = ["paint", "erase", "clear", "help", "stop"];
 var btnImg_paint;
 var btnImg_erase;
 var btnImg_clear;
 var btnImg_stop;
 var btnImg_save;
+var btnImg_help;
 var btnImg_rtrain;
 var btnImg_xtrain;
 var sliderSize = 150;
@@ -55,7 +60,9 @@ var loadedScore;
 
 function setup() {  	
 
-	var c = createCanvas(windowWidth, windowHeight, "2d");
+	var c
+	if(WEBGL) c = createCanvas(windowWidth, windowHeight, "webgl");
+	else c = createCanvas(windowWidth, windowHeight, "2d");
 	c.drop(gotFile); 
 
 	canvasWidth = windowWidth;
@@ -73,6 +80,7 @@ function setup() {
 	btnImg_save = loadImage("img/save.png");
 	btnImg_stop = loadImage("img/stop.png");
 	btnImg_save = loadImage("img/save.png");
+	btnImg_help = loadImage("img/help.png");
 	btnImg_rtrain = loadImage("img/cached.png");
 	btnImg_xtrain = loadImage("img/code-tags.png");
 
@@ -167,7 +175,9 @@ function draw() {
 	
 	pop();
 
-	var listenerImg = get(canvasWidth/2 - 1, 0, 2, canvasHeight);
+	var listenerImg
+	if(WEBGL) listenerImg = get(canvasWidth/2, 0, 4, canvasHeight);
+	else listenerImg = get(canvasWidth/2 - 2, 0, 4, canvasHeight);
 
 	//UI
 	strokeWeight(2);
@@ -180,6 +190,25 @@ function draw() {
     }
     for (var i=0; i < sliders.length; i++) {
     	sliders[i].display();    	
+    }
+
+
+    if(helpShow){
+    	var helpW = windowWidth/1.5;
+		var helpH = windowHeight/2;
+		var helpX = windowWidth/2 - helpW/2;
+    	var helpY = windowHeight/2 - helpH/2;
+
+    	textAlign(CENTER, CENTER);
+
+		fill(0);
+		rect(helpX, helpY, helpW, helpH);
+
+		var txt1 = 
+		"The quick brown fox jumped over the lazy dog.\n"+
+		"EPIC";
+		fill(50);
+		text(txt1, helpX + helpW/2, helpY + helpH/2, helpW - margen*2, helpX - margen*2); // Text wraps within text box
     }
 
 	//----SOUND
@@ -316,16 +345,43 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 
 	
 
+	this.setValue = function(){
+	 	if(this.isHorizontal){
+	 		sliderX = ((this.x-this.min) * maxX) / sliderSize;
+    			
+			if (sliderX < maxX/2) sliderX = (maxX - sliderX)*-1 + maxX/2;
+			else if (sliderX > maxX/2) sliderX -= maxX/2;
+			else sliderX = 0;
+	 	}
+	 	else{
+	 		sliderR = ((this.y-this.min) * maxR) / sliderSize *-1;
+    			
+			if (sliderR < maxR/2) sliderR = (maxR - sliderR)*-1 + maxR/2;
+			else if (sliderR > maxR/2) sliderR -= maxR/2;
+			else sliderR = 0;
+	 	}
+	}
+
+
 	this.reset = function(){
 	 	if(this.isHorizontal){
 	 		this.x = this.min + sliderSize/2;
+	 		this.setValue();
 	 	}
 	 	else{
 	 		this.y = this.min - sliderSize/2;
+	 		this.setValue();
 	 	}
 	}
 
 	this.reset();
+	if(this.isHorizontal){
+ 		this.x = this.min + sliderSize/2 + sliderSize/6;
+ 		this.setValue();
+ 	}
+
+	
+
 
     this.display = function() {
 
@@ -337,12 +393,8 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     			if(this.x > this.max) this.x = this.max - 1;
     			else if (this.x < this.min) this.x = this.min;
 
-
-    			sliderX = ((this.x-this.min) * maxX) / sliderSize;
+    			this.setValue();
     			
-    			if (sliderX < maxX/2) sliderX = (maxX - sliderX)*-1 + maxX/2;
-    			else if (sliderX > maxX/2) sliderX -= maxX/2;
-    			else sliderX = 0;
     			
     		}
     		else{
@@ -350,13 +402,9 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 
     			if(this.y < this.max) this.y = this.max;
     			else if (this.y > this.min) this.y = this.min;
-
-    			sliderR = ((this.y-this.min) * maxR) / sliderSize *-1;
     			
-    			if (sliderR < maxR/2) sliderR = (maxR - sliderR)*-1 + maxR/2;
-    			else if (sliderR > maxR/2) sliderR -= maxR/2;
-    			else sliderR = 0;
 
+    			this.setValue();
 
     		}
     	}
@@ -413,6 +461,7 @@ function Boton(_x, _y, _tipo) {
     else if(this.tipo == "clear") this.icon = btnImg_clear;
 	else if(this.tipo == "stop") this.icon = btnImg_stop;
 	else if(this.tipo == "save") this.icon = btnImg_save;
+	else if(this.tipo == "help") this.icon = btnImg_help;
 	     
 
 
@@ -457,6 +506,9 @@ function Boton(_x, _y, _tipo) {
     		}
     		else if(this.tipo == "save"){
     			savingScore = true;    			
+    		}
+    		else if(this.tipo == "help"){
+    			helpShow = !helpShow;
     		}
     		
     	}	
