@@ -1,5 +1,8 @@
 var WEBGL = true;
 
+var appName = "ROLL"
+var appVersion = "0.1";
+
 var trainX = 0;
 var trainR = 0;
 var maxX = 20;
@@ -35,8 +38,8 @@ var buttonSize = 40;
 var buttons = [];
 var sliders = [];
 
-if(WEBGL) var buttonsTypes = ["paint", "erase", "clear", "help", "stop"];
-else var buttonsTypes = ["paint", "erase", "clear", "help", "stop"];
+if(WEBGL) var buttonsTypes = ["paint", "erase", "clear", "save", "help", "stop"];
+else var buttonsTypes = ["paint", "erase", "clear", "save", "help", "stop"];
 var btnImg_paint;
 var btnImg_erase;
 var btnImg_clear;
@@ -92,7 +95,7 @@ function setup() {
     }
 
     for (var i=0; i < buttonsTypes.length; i++) {
-    	if(i <= 3) buttons.push(new Boton(margen, i * (buttonSize + margen) + margen, buttonsTypes[i]));
+    	if(i <= 4) buttons.push(new Boton(margen, i * (buttonSize + margen) + margen, buttonsTypes[i]));
     	else buttons.push(new Boton(margen, windowHeight - margen - buttonSize, buttonsTypes[i]));  	
     }
 
@@ -193,23 +196,7 @@ function draw() {
     }
 
 
-    if(helpShow){
-    	var helpW = windowWidth/1.5;
-		var helpH = windowHeight/2;
-		var helpX = windowWidth/2 - helpW/2;
-    	var helpY = windowHeight/2 - helpH/2;
-
-    	textAlign(CENTER, CENTER);
-
-		fill(0);
-		rect(helpX, helpY, helpW, helpH);
-
-		var txt1 = 
-		"The quick brown fox jumped over the lazy dog.\n"+
-		"EPIC";
-		fill(50);
-		text(txt1, helpX + helpW/2, helpY + helpH/2, helpW - margen*2, helpX - margen*2); // Text wraps within text box
-    }
+    
 
 	//----SOUND
 
@@ -248,14 +235,39 @@ function draw() {
 
 	for (var i = 0; i < polyNum; i++){
 		oscilators[i].osc.freq(oscilatorsFreq[i]);
-
-		/*if(oscilatorsFreq[i] == 0){
-			oscilators[i].osc.amp(1, 0);
-		}
-		else{
-			oscilators[i].osc.amp(1, 0);
-		}*/
 	}
+
+	//help
+	if(helpShow){
+    	var helpW = 320;
+		var helpH = 230;
+		var helpX = windowWidth/2 - helpW/2;
+    	var helpY = windowHeight/2 - helpH/2;
+
+    	textAlign(CENTER, CENTER);
+
+		fill(0);
+		rect(helpX, helpY, helpW, helpH);
+
+
+		var txt1 = 
+		appName+" "+appVersion+"\n"+
+		" \n"+
+		"HOW TO:\n"+
+		"click 'n drag to paint different voices.\n"+
+		"use eraser if you fuck up.\n"+
+		"use clear canvas if you really fuck up.\n"+
+		"don't use save.\n"+
+		"use sliders to give it swing.\n"+
+		" \n"+
+		"KNOWN BUGS:\n"+
+		"save don´t work.\n"+
+		"rotation of the canvas fucks up the paint accuracy.\n"+
+		"it's meaningless.\n"+
+		" ";
+		fill(100);
+		text(txt1, helpX + helpW/2, helpY + margen, helpW - margen*2, helpX - margen*2);
+    }
 	
 	//save
 	if(savingScore){
