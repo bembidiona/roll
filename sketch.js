@@ -1,4 +1,4 @@
-var WEBGL = true;
+var WEBGL = false;
 
 var appName = "ROLL"
 var appVersion = "0.1";
@@ -38,6 +38,7 @@ var buttonSize = 40;
 var buttons = [];
 var sliders = [];
 
+
 if(WEBGL) var buttonsTypes = ["paint", "erase", "clear", "save", "help", "stop"];
 else var buttonsTypes = ["paint", "erase", "clear", "save", "help", "stop"];
 var btnImg_paint;
@@ -60,12 +61,15 @@ var savingScore = false;
 
 var loadedScore;
 
+var isDragging;
+var justWarped = true;;
+
 
 function setup() {  	
 
-	var c
-	if(WEBGL) c = createCanvas(windowWidth, windowHeight, "webgl");
-	else c = createCanvas(windowWidth, windowHeight, "2d");
+	var c = createCanvas(windowWidth, windowHeight, WEBGL);
+	/*if(WEBGL) c = createCanvas(windowWidth, windowHeight, "webgl");
+	else c = createCanvas(windowWidth, windowHeight, "2d");*/
 	c.drop(gotFile); 
 
 	canvasWidth = windowWidth;
@@ -99,13 +103,16 @@ function setup() {
     	else buttons.push(new Boton(margen, windowHeight - margen - buttonSize, buttonsTypes[i]));  	
     }
 
-    sliders.push(new Slider(margen, windowHeight - margen*2 - buttonSize*2, false, "rtrain"));  	
-    sliders.push(new Slider(margen + buttonSize + margen, windowHeight - margen - buttonSize, true, "xtrain"));
+    sliders.push(new Slider(margen, windowHeight - margen - buttonSize*2, false, "rtrain"));  	
+    sliders.push(new Slider(margen + buttonSize, windowHeight - margen - buttonSize, true, "xtrain"));
+
+    
 
 }
 
 function draw() {  
 	background(cBg);
+	cursor(CROSS);
 
 	pg0 = pg2 = pg1;
 
@@ -118,9 +125,7 @@ function draw() {
 	image(pg1, 0 + trainX, 0);
 	image(pg2, canvasWidth + trainX, 0);
 
-	
-  	
-	if (mouseIsPressed && !isOnUI()){
+	if (isDragging){
 
 		var pointX;		
 
@@ -132,6 +137,11 @@ function draw() {
 			pointX = canvasWidth - trainX + mouseX;
 			jumpTest = false;
 		}
+
+		if(justWarped){
+			jumpTestOld = jumpTest;
+			justWarped = false;	
+		} 
 
 		if(currentTool == "paint"){
 			pg1.strokeWeight(4);
@@ -152,6 +162,19 @@ function draw() {
 		else if(jumpTest == jumpTestOld){
 			pg1.line(pointX, mouseY, pointXOld, mouseYOld);
 		}
+		else {
+			if(pointX > pointXOld) {				
+				pg1.line(pointX, mouseY, pg1.width, getMiddleY());
+				pg1.line(pointXOld, mouseYOld, 0, getMiddleY());
+			}
+			else {				
+				pg1.line(pointX, mouseY, 0, getMiddleY());
+				pg1.line(pointXOld, mouseYOld, pg1.width, getMiddleY());
+			}
+		}
+
+		/*pg1.background(255, 50);		
+		pg0 = pg2 = pg1;*/
 
 		pointXOld = pointX;
 		mouseYOld = mouseY;
@@ -160,11 +183,18 @@ function draw() {
 	
 	if(sliderX > 0){
 		if(trainX < canvasWidth) trainX += sliderX;
-		else trainX = 0;
+		else {
+			trainX = 0;
+
+			justWarped = true;
+		}
 	}
 	if (sliderX < 0){
 		if(trainX > -canvasWidth) trainX += sliderX;
-		else trainX = 0;
+		else {
+			trainX = 0;
+			justWarped = true;
+		}
 	}
 
 	if(sliderR != 0){		
@@ -239,8 +269,8 @@ function draw() {
 
 	//help
 	if(helpShow){
-    	var helpW = 320;
-		var helpH = 230;
+    	var helpW = 350;
+		var helpH = 250;
 		var helpX = windowWidth/2 - helpW/2;
     	var helpY = windowHeight/2 - helpH/2;
 
@@ -256,26 +286,39 @@ function draw() {
 		"HOW TO:\n"+
 		"click 'n drag to paint different voices.\n"+
 		"use eraser if you fuck up.\n"+
-		"use clear canvas if you really fuck up.\n"+
-		"don't use save.\n"+
+		"use clear canvas if you really fuck up.\n"+		
+		"floppy to save, drop images to load.\n"+
 		"use sliders to give it swing.\n"+
 		" \n"+
-		"KNOWN BUGS:\n"+
-		"save don´t work.\n"+
-		"rotation of the canvas fucks up the paint accuracy.\n"+
-		"it's meaningless.\n"+
+		"KNOWN BUGS & WORKAROUNDS:\n"+
+		"pause before draw, rotation and negative translation of the canvas breaks the paint accuracy. \n"+
+		"in firefox, to load an image, you have to drop it twice.\n"+
+		".\n"+
+		"by jeremias babini\n"+
 		" ";
 		fill(100);
 		text(txt1, helpX + helpW/2, helpY + margen, helpW - margen*2, helpX - margen*2);
+
+		
     }
 	
 	//save
 	if(savingScore){
 		image(pg1, 0, 0,windowWidth, windowHeight);
 		savingScore = false;
-		saveCanvas("score","png");	
+		save();	
 	}
 	
+}
+
+function getMiddleY() {
+	if(mouseY > mouseYOld){
+		return mouseYOld + (mouseY - mouseYOld)/2;
+	}
+	else if (mouseY < mouseYOld){
+		return mouseY + (mouseYOld - mouseY)/2;	
+	} 
+	else return mouseY;	
 }
 
 function createMiniCanvases() {
@@ -292,6 +335,10 @@ function createMiniCanvases() {
 	for (var i=0; i < pg1.height; i+= 40){
 		pg1.line(0, i, canvasWidth, i);
 	}
+
+	pg1.stroke(0,250,0);
+	pg1.noFill();
+	pg1.rect(0,0,canvasWidth,canvasHeight);
 	pg0 = pg2 = pg1;
 }
 
@@ -302,7 +349,7 @@ function isOnUI() {
 }
 
 function mousePressed() {
-  	if(isOnUI){
+  	if(isOnUI()){
 		for (var i=0; i < buttons.length; i++) {
 	    	buttons[i].checkClick();    	
 	    }
@@ -310,10 +357,12 @@ function mousePressed() {
 	    	sliders[i].checkClick();    	
 	    }
 	}
+	else isDragging = true;
 }
 
 function mouseReleased() {
   firstNode = true;
+  isDragging = false;
 
     for (var i=0; i < sliders.length; i++) {
     	sliders[i].isBeingDragged = false;    	
@@ -421,7 +470,7 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     		}
     	}
 
-    	strokeWeight(5);
+    	strokeWeight(2);
     	stroke(0);
 
     	if(this.isHorizontal){
@@ -445,7 +494,10 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     }
 
     this.checkMouse = function() {
-    	if (this.x < mouseX && mouseX < this.x + this.w && this.y < mouseY && mouseY < this.y + this.h) return true;
+    	if (this.x < mouseX && mouseX < this.x + this.w && this.y < mouseY && mouseY < this.y + this.h){
+    		cursor(HAND);
+    		return true;
+    	}
     	else return false;    	
     }
 
@@ -491,7 +543,10 @@ function Boton(_x, _y, _tipo) {
     }
 
     this.checkMouse = function() {
-    	if (this.x < mouseX && mouseX < this.x + this.w && this.y < mouseY && mouseY < this.y + this.h) return true;
+    	if (this.x < mouseX && mouseX < this.x + this.w && this.y < mouseY && mouseY < this.y + this.h) {
+    		cursor(HAND);
+    		return true;
+    	}
     	else return false;    	
     }
 
