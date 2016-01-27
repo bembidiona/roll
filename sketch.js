@@ -270,7 +270,7 @@ function draw() {
 	//help
 	if(helpShow){
     	var helpW = 350;
-		var helpH = 250;
+		var helpH = 270;
 		var helpX = windowWidth/2 - helpW/2;
     	var helpY = windowHeight/2 - helpH/2;
 
@@ -336,9 +336,10 @@ function createMiniCanvases() {
 		pg1.line(0, i, canvasWidth, i);
 	}
 
-	pg1.stroke(0,250,0);
+	/*pg1.stroke(0,250,0);
 	pg1.noFill();
-	pg1.rect(0,0,canvasWidth,canvasHeight);
+	pg1.rect(0,0,canvasWidth,canvasHeight);*/
+	
 	pg0 = pg2 = pg1;
 }
 
