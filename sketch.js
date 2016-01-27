@@ -78,7 +78,7 @@ function setup() {
 	createMiniCanvases();
 
 	
-  	angleMode(DEGREES);
+  	angleMode(RADIANS);
 
   	btnImg_paint = loadImage("img/brush.png");
 	btnImg_erase = loadImage("img/eraser.png");
@@ -106,7 +106,7 @@ function setup() {
     sliders.push(new Slider(margen, windowHeight - margen - buttonSize*2, false, "rtrain"));  	
     sliders.push(new Slider(margen + buttonSize, windowHeight - margen - buttonSize, true, "xtrain"));
 
-    
+    textFont("Helvetica");
 
 }
 
@@ -125,23 +125,9 @@ function draw() {
 	image(pg1, 0 + trainX, 0);
 	image(pg2, canvasWidth + trainX, 0);
 
+	pop();
+
 	if (isDragging){
-
-		var pointX;		
-
-		if(mouseX > trainX){
-			pointX = mouseX - trainX;
-			jumpTest = true;
-		}
-		else {
-			pointX = canvasWidth - trainX + mouseX;
-			jumpTest = false;
-		}
-
-		if(justWarped){
-			jumpTestOld = jumpTest;
-			justWarped = false;	
-		} 
 
 		if(currentTool == "paint"){
 			pg1.strokeWeight(4);
@@ -153,31 +139,74 @@ function draw() {
 			pg1.noFill();
 			pg1.stroke(cBg)
 		}
+
+
 		
-		pg1.point(pointX, mouseY);
+		x = mouseX;
+		y = mouseY;
+		cx = canvasWidth/2;
+		cy = canvasHeight/2;
+        cos = Math.cos(trainR);
+        sin = Math.sin(trainR);
+
+        nx = (cos * (x - cx)) + (sin * (y - cy)) + cx;
+        ny = (cos * (y - cy)) - (sin * (x - cx)) + cy;        
+
+        if(sliderX > 0){
+        	if(mouseX > trainX){
+				nx = nx - trainX;
+				jumpTest = true;
+			}
+			else {
+				nx = canvasWidth - trainX + nx;
+				jumpTest = false;
+			}	
+        }
+        else{
+        	
+        	if(mouseX < canvasWidth + trainX){     
+        		   		
+				nx = nx - trainX;
+				jumpTest = true;
+			}
+			else {
+				nx = canvasWidth - (canvasWidth - nx);				
+				jumpTest = false;
+			}	
+        }		
+
+
+
+        pg1.point(nx, ny);
+
+
+		
+        //fill spaces with lines
+        if(justWarped){
+			jumpTestOld = jumpTest;
+			justWarped = false;	
+		}
 
 		if(firstNode){
 			firstNode = false;
 		}
 		else if(jumpTest == jumpTestOld){
-			pg1.line(pointX, mouseY, pointXOld, mouseYOld);
+			pg1.line(nx, ny, pointXOld, mouseYOld);
 		}
 		else {
-			if(pointX > pointXOld) {				
-				pg1.line(pointX, mouseY, pg1.width, getMiddleY());
+			if(nx > pointXOld) {				
+				pg1.line(nx, ny, pg1.width, getMiddleY());
 				pg1.line(pointXOld, mouseYOld, 0, getMiddleY());
 			}
 			else {				
-				pg1.line(pointX, mouseY, 0, getMiddleY());
+				pg1.line(nx, ny, 0, getMiddleY());
 				pg1.line(pointXOld, mouseYOld, pg1.width, getMiddleY());
 			}
 		}
+		///--------------		
 
-		/*pg1.background(255, 50);		
-		pg0 = pg2 = pg1;*/
-
-		pointXOld = pointX;
-		mouseYOld = mouseY;
+		pointXOld = nx;
+		mouseYOld = ny;
 		jumpTestOld = jumpTest;
 	}
 	
@@ -198,7 +227,7 @@ function draw() {
 	}
 
 	if(sliderR != 0){		
-		trainR = trainR + sliderR;
+		trainR = trainR + sliderR*0.01;
 	}
 
 	
@@ -206,7 +235,7 @@ function draw() {
 
 
 	
-	pop();
+	
 
 	var listenerImg
 	if(WEBGL) listenerImg = get(canvasWidth/2, 0, 4, canvasHeight);
@@ -270,7 +299,7 @@ function draw() {
 	//help
 	if(helpShow){
     	var helpW = 350;
-		var helpH = 270;
+		var helpH = 260;
 		var helpX = windowWidth/2 - helpW/2;
     	var helpY = windowHeight/2 - helpH/2;
 
@@ -291,11 +320,11 @@ function draw() {
 		"use sliders to give it swing.\n"+
 		" \n"+
 		"KNOWN BUGS & WORKAROUNDS:\n"+
-		"pause before draw, rotation and negative translation of the canvas breaks the paint accuracy. \n"+
+		"rotation and negative translation can break the paint accuracy, pause to reset matrix.\n"+
 		"in firefox, to load an image, you have to drop it twice.\n"+
-		".\n"+
-		"by jeremias babini\n"+
-		" ";
+		" \n"+
+		"by jeremias babini\n"
+		;
 		fill(100);
 		text(txt1, helpX + helpW/2, helpY + margen, helpW - margen*2, helpX - margen*2);
 
@@ -336,9 +365,8 @@ function createMiniCanvases() {
 		pg1.line(0, i, canvasWidth, i);
 	}
 
-	/*pg1.stroke(0,250,0);
-	pg1.noFill();
-	pg1.rect(0,0,canvasWidth,canvasHeight);*/
+	pg1.stroke(0,250,0);
+	pg1.line(0,0,0,canvasHeight);
 	
 	pg0 = pg2 = pg1;
 }
@@ -438,8 +466,9 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 
 	this.reset();
 	if(this.isHorizontal){
- 		this.x = this.min + sliderSize/2 + sliderSize/6;
- 		this.setValue();
+		// todo
+ 		//this.x = this.min + sliderSize/2 + sliderSize/6;
+ 		//this.setValue();
  	}
 
 	
@@ -448,6 +477,8 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     this.display = function() {
 
     	if(this.isBeingDragged){
+
+    		
 
     		if(this.isHorizontal){
     			this.x = mouseX - this.grabPoint;
