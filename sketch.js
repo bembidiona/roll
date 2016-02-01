@@ -62,8 +62,13 @@ var savingScore = false;
 var loadedScore;
 
 var isDragging;
-var justWarped = true;;
+var justWarped = true;
 
+
+var vibrato = 0;
+var vibratoSpeed = 5;
+var vibratoAmplitude = 100;
+var vibratoOffset = 2;
 
 function setup() {  	
 
@@ -126,6 +131,8 @@ function draw() {
 	image(pg2, canvasWidth + trainX, 0);
 
 	pop();
+
+	
 
 	if (isDragging){
 
@@ -277,6 +284,7 @@ function draw() {
 
 				var f = canvasHeight - i;
 				oscFreq = ( 550 * f ) / canvasHeight + 150;
+				oscFreq = map(f, 0, canvasHeight, 20, 500);
 				
 				oscilatorsFreq[voiceNum] = oscFreq;
 				voiceNum++;
@@ -292,9 +300,27 @@ function draw() {
 		
 	}
 
+
+	/*vibrato += 0.5;
+	var seno = Math.sin(vibrato);
+	var ampy = map(seno,-1,1, 0.2, 0.8);*/
+	
+	
+	var w = map(mouseX, 0, width, 0, 1);
+  	w = constrain(w, 0, 1);
+ 	
 	for (var i = 0; i < polyNum; i++){
-		oscilators[i].osc.freq(oscilatorsFreq[i]);
+		if(oscilatorsFreq[i] == 0){
+			oscilators[i].osc.amp(0);
+		}
+		else {
+			oscilators[i].osc.freq(oscilatorsFreq[i]);			
+			oscilators[i].osc.amp(0.8);
+		}
+
+		oscilators[i].osc.width(w);
 	}
+	
 
 	//help
 	if(helpShow){
@@ -404,7 +430,7 @@ function Oscilador() {
     this.freq = 220;
     this.oscOn = false;
 
-    this.osc = new p5.SqrOsc(220);
+    this.osc = new p5.Pulse(220);
     this.osc.start();    
 }
 
