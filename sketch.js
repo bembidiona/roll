@@ -20,10 +20,13 @@ var jumpTestOld = false;
 
 var helpShow = false;
 
-var cBg = 255;
-var cLines = 0;
-var cPlayer = "#8f0cff";
-var cUIBg = 100;
+var cBg;
+var cLines;
+var cPlayer;
+var cGrid;
+var cBorder;
+var cOver;
+
 
 var oscilators = [];
 var oscilatorsFreq = [];
@@ -71,7 +74,26 @@ var vibratoSpeed = 5;
 var vibratoAmplitude = 100;
 var vibratoOffset = 2;
 
-function setup() {  	
+var colorKey;
+
+function setup() {  
+	
+	noSmooth();	
+
+	c1 = color(0,0,0);
+	c2 = color(85,255,255);
+	c3 = color(255,85,255);
+	c4 = color(255,255,255);
+
+	cBg = c1;
+	cLines = c2;
+	cPlayer = c3;
+	cGrid = c3;
+	cBorder = c3;
+	cOver = c3;
+	cButtons = c4;
+
+	colorKey = green(cLines);
 
 	var c = createCanvas(windowWidth, windowHeight, WEBGL);
 	/*if(WEBGL) c = createCanvas(windowWidth, windowHeight, "webgl");
@@ -112,9 +134,11 @@ function setup() {
     sliders.push(new Slider(margen, windowHeight - margen - buttonSize*2, false, "rtrain"));  	
     sliders.push(new Slider(margen + buttonSize, windowHeight - margen - buttonSize, true, "xtrain"));
 
-    textFont("Helvetica");
+    textFont('Helvetica');
 
     ISaw = new Wad({source : 'sawtooth'});
+
+    
 }
 
 function draw() {  
@@ -139,7 +163,7 @@ function draw() {
 	if (isDragging){
 
 		if(currentTool == "paint"){
-			pg1.strokeWeight(4);
+			pg1.strokeWeight(3.5);
 			pg1.noFill();
 			pg1.stroke(cLines)
 		}
@@ -281,7 +305,7 @@ function draw() {
 		if(safeWait <= 0){
 			pix = listenerImg.get(2,i-1);
 
-			if(pix[1] == 0){
+			if(pix[1] == colorKey){
 				safeWait = 20; //safe
 
 				var f = canvasHeight - i;
@@ -292,10 +316,16 @@ function draw() {
 				voiceNum++;
 
 				var lol = 14;
-				fill(0);
+				fill(cButtons);
 				noStroke();
 				rect(windowWidth/2 - lol/2, i - lol/2, lol, lol);
 				
+				stroke(cButtons);
+				strokeWeight(2);
+				for (var j = 0; j < 10; j++) {
+					lol = random(40) + 30;
+					line(windowWidth/2, i, windowWidth/2 + random(lol) - lol/2, i + random(lol) - lol/2);
+				};
 			} 
 		}
 		else safeWait--;
@@ -376,11 +406,33 @@ function draw() {
 		" \n"+
 		"by jeremias babini\n"
 		;
-		fill(100);
+		fill(cButtons);
+		noStroke();
 		text(txt1, helpX + helpW/2, helpY + margen, helpW - margen*2, helpX - margen*2);
 
 		
     }
+
+    var glitch = get(0,0,windowWidth,windowHeight);
+    if (voiceNum == 0){
+    	
+    }
+    else{
+    	glitchOffset = voiceNum * 0.5 + 1;
+
+    	/*blendMode(ADD);
+
+    	tint(255,0,0);
+    	image(glitch, random(glitchOffset*2) - glitchOffset,random(glitchOffset*2) - glitchOffset);*/
+    	
+
+
+	    blendMode(EXCLUSION);
+	    image(glitch, random(glitchOffset*2) - glitchOffset,random(glitchOffset*2) - glitchOffset);
+	    blendMode(SCREEN);
+	    image(glitch, random(glitchOffset*2) - glitchOffset,random(glitchOffset*2) - glitchOffset);
+    }
+    
 	
 	//save
 	if(savingScore){
@@ -406,18 +458,20 @@ function createMiniCanvases() {
 	pg1 = createGraphics(canvasWidth, canvasHeight);
 	pg2 = createGraphics(canvasWidth, canvasHeight);
 
+	pg1.strokeWeight(0.2);
 	pg1.background(cBg);
-	pg1.stroke(220);
-	for (var i=0; i < pg1.width; i+= 80){
+	pg1.stroke(cGrid);
+	for (var i=0; i < pg1.width; i+= 60){
 		pg1.line(i, 0, i, canvasHeight);
 	}
-	pg1.stroke(200);
-	for (var i=0; i < pg1.height; i+= 40){
+	pg1.stroke(cGrid);
+	for (var i=0; i < pg1.height; i+= 60){
 		pg1.line(0, i, canvasWidth, i);
 	}
 
-	pg1.stroke(0,250,0);
+	pg1.strokeWeight(1);
 	pg1.line(0,0,0,canvasHeight);
+	pg1.line(canvasWidth,0,canvasWidth,canvasHeight);
 	
 	pg0 = pg2 = pg1;
 }
@@ -554,8 +608,8 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     		}
     	}
 
-    	strokeWeight(2);
-    	stroke(0);
+    	stroke(cButtons);
+    	strokeWeight(1);
 
     	if(this.isHorizontal){
     		line(this.min + this.w/2, this.y + this.h/2, this.min + this.w/2 + sliderSize, this.y + this.h/2);
@@ -564,13 +618,8 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     		line(this.x + this.w/2, this.min + this.h/2, this.x + this.w/2, this.min + this.h/2 - sliderSize);	
     	}
 
-
-    	noStroke()
-    	fill(0, 10);
-    	rect(this.x + 5, this.y + 5, this.w, this.h); 
-
-    	if(this.checkMouse()) fill(255,0,0);
-    	else fill(0);
+    	if(this.checkMouse()) fill(cOver);
+    	else fill(cBg);
 
     	rect(this.x, this.y, this.w, this.h);
 
@@ -614,12 +663,11 @@ function Boton(_x, _y, _tipo) {
 
 
     this.display = function() {
-    	noStroke()
-    	fill(0, 10);
-    	rect(this.x + 5, this.y + 5, this.w, this.h); 
-
-    	if(this.checkMouse()) fill(255,0,0);
-    	else fill(0);
+    	stroke(cButtons);
+    	strokeWeight(1);
+    	
+    	if(this.checkMouse()) fill(cOver);
+    	else fill(cBg);
 
     	rect(this.x, this.y, this.w, this.h);
 

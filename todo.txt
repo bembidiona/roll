@@ -1,5 +1,4 @@
-- centrar mejor help modal
-- tratar de que arranque en silencio
-
-BUG: no pinta bien si se mueve para la izquierda
-BUG: pinta hyper mal si esta rotado
+- arrancar con el help activado
+- que arranque ya scrolleando
+- poner un boton para que frene, pero que no resetee la posicion del canvas
+- intentar que no pegue el golpaso de audio cuando carga
