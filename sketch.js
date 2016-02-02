@@ -572,9 +572,8 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 
 	this.reset();
 	if(this.isHorizontal){
-		// todo
- 		//this.x = this.min + sliderSize/2 + sliderSize/6;
- 		//this.setValue();
+		this.x = this.min + sliderSize/2 + sliderSize/6;
+ 		this.setValue();
  	}
 
 	
