@@ -76,6 +76,8 @@ var vibratoOffset = 2;
 
 var colorKey;
 
+window.addEventListener("contextmenu", function(e) { e.preventDefault(); })
+
 function setup() {  
 	
 	noSmooth();	
@@ -134,9 +136,25 @@ function setup() {
     sliders.push(new Slider(margen, windowHeight - margen - buttonSize*2, false, "rtrain"));  	
     sliders.push(new Slider(margen + buttonSize, windowHeight - margen - buttonSize, true, "xtrain"));
 
-    textFont('Helvetica');
+    textFont('Consolas');
 
-    ISaw = new Wad({source : 'sawtooth'});
+    ISaw = new Wad({
+    	source : 'sawtooth',
+    	tuna   : {
+	        Compressor : {
+		        threshold: 0.5,    //-100 to 0
+			    makeupGain: 1,     //0 and up
+			    attack: 1,         //0 to 1000
+			    release: 0,        //0 to 3000
+			    ratio: 4,          //1 to 20
+			    knee: 5,           //0 to 40
+			    automakeup: true,  //true/false
+			    bypass: 0
+		    }
+	    }
+    });
+
+    
 
     
 }
@@ -145,16 +163,35 @@ function draw() {
 	background(cBg);
 	cursor(CROSS);
 
-	pg0 = pg2 = pg1;
-
 	push();
 	translate(canvasWidth/2, canvasHeight/2);
 	rotate(trainR);
 	translate(-canvasWidth/2, -canvasHeight/2);
 
-	image(pg0, -canvasWidth + trainX, 0);
-	image(pg1, 0 + trainX, 0);
-	image(pg2, canvasWidth + trainX, 0);
+	//grid
+	strokeWeight(0.2);
+	stroke(cGrid);
+	gridW = canvasWidth/16;
+	gridH = canvasHeight/16;
+	for (var i=-canvasWidth; i < canvasWidth*2; i+= gridW){
+		line(i+trainX, -canvasHeight, i+trainX, canvasHeight*3);
+	}
+	stroke(cGrid);
+	for (var i=-canvasHeight; i < canvasHeight*2; i+= gridH){
+		line(-canvasWidth, i, canvasWidth*3, i);
+	}
+	strokeWeight(1);
+	noFill();
+	line(-canvasWidth,-1,canvasWidth*3,-1);
+	line(-canvasWidth,canvasHeight+1,canvasWidth*3,canvasHeight+1);
+	line(-canvasWidth+trainX,0,-canvasWidth+trainX,canvasHeight);
+	line(-1+trainX,0,-1+trainX,canvasHeight);
+	line(canvasWidth+1+trainX,0,canvasWidth+1+trainX,canvasHeight);
+	//---
+
+	image(pg, -canvasWidth + trainX, 0);
+	image(pg, 0 + trainX, 0);
+	image(pg, canvasWidth + trainX, 0);
 
 	pop();
 
@@ -163,14 +200,14 @@ function draw() {
 	if (isDragging){
 
 		if(currentTool == "paint"){
-			pg1.strokeWeight(3.5);
-			pg1.noFill();
-			pg1.stroke(cLines)
+			pg.strokeWeight(3.5);
+			pg.noFill();
+			pg.stroke(cLines)
 		}
 		else if(currentTool == "erase"){
-			pg1.strokeWeight(50);
-			pg1.noFill();
-			pg1.stroke(cBg)
+			pg.strokeWeight(50);
+			pg.noFill();
+			pg.stroke(cBg)
 		}
 
 
@@ -210,7 +247,7 @@ function draw() {
 
 
 
-        pg1.point(nx, ny);
+        pg.point(nx, ny);
 
 
 		
@@ -224,16 +261,16 @@ function draw() {
 			firstNode = false;
 		}
 		else if(jumpTest == jumpTestOld){
-			pg1.line(nx, ny, pointXOld, mouseYOld);
+			pg.line(nx, ny, pointXOld, mouseYOld);
 		}
 		else {
 			if(nx > pointXOld) {				
-				pg1.line(nx, ny, pg1.width, getMiddleY());
-				pg1.line(pointXOld, mouseYOld, 0, getMiddleY());
+				pg.line(nx, ny, pg.width, getMiddleY());
+				pg.line(pointXOld, mouseYOld, 0, getMiddleY());
 			}
 			else {				
-				pg1.line(nx, ny, 0, getMiddleY());
-				pg1.line(pointXOld, mouseYOld, pg1.width, getMiddleY());
+				pg.line(nx, ny, 0, getMiddleY());
+				pg.line(pointXOld, mouseYOld, pg.width, getMiddleY());
 			}
 		}
 		///--------------		
@@ -273,22 +310,6 @@ function draw() {
 	var listenerImg
 	if(WEBGL) listenerImg = get(canvasWidth/2, 0, 4, canvasHeight);
 	else listenerImg = get(canvasWidth/2 - 2, 0, 4, canvasHeight);
-
-	//UI
-	strokeWeight(2);
-	stroke(cPlayer);
-	line(canvasWidth/2,0,canvasWidth/2,canvasHeight);
-	stroke(cLines);
-	
-	for (var i=0; i < buttons.length; i++) {
-    	buttons[i].display();    	
-    }
-    for (var i=0; i < sliders.length; i++) {
-    	sliders[i].display();    	
-    }
-
-
-    
 
 	//----SOUND
 
@@ -377,15 +398,52 @@ function draw() {
 	}
 	
 
+
+    var glitch = get(0,0,windowWidth,windowHeight);
+    if (voiceNum == 0){
+    	
+    }
+    else{
+    	glitchOffset = voiceNum * 0.5 + 0.5;
+
+    	/*blendMode(ADD);
+    	tint(255,0,0);
+    	image(glitch, random(glitchOffset*2) - glitchOffset,random(glitchOffset*2) - glitchOffset);*/
+    	
+
+
+	    blendMode(EXCLUSION);
+	    image(glitch, random(glitchOffset*2) - glitchOffset,random(glitchOffset*2) - glitchOffset);
+	    blendMode(ADD);
+	    image(glitch, random(glitchOffset*2) - glitchOffset,random(glitchOffset*2) - glitchOffset);	   
+    }
+    
+
+    //----------
+	//------UI
+	//------------
+	blendMode(NORMAL);
+	strokeWeight(2);
+	stroke(cPlayer);
+	line(canvasWidth/2,0,canvasWidth/2,canvasHeight);
+	stroke(cLines);
+	
+	for (var i=0; i < buttons.length; i++) {
+    	buttons[i].display();    	
+    }
+    for (var i=0; i < sliders.length; i++) {
+    	sliders[i].display();    	
+    }
 	//help
 	if(helpShow){
-    	var helpW = 350;
-		var helpH = 260;
+    	var helpW = 370;
+		var helpH = 274;
 		var helpX = windowWidth/2 - helpW/2;
     	var helpY = windowHeight/2 - helpH/2;
 
     	textAlign(CENTER, CENTER);
 
+    	stroke(cPlayer);
 		fill(0);
 		rect(helpX, helpY, helpW, helpH);
 
@@ -408,35 +466,13 @@ function draw() {
 		;
 		fill(cButtons);
 		noStroke();
-		text(txt1, helpX + helpW/2, helpY + margen, helpW - margen*2, helpX - margen*2);
-
-		
+		text(txt1, helpX + helpW/2 +3, helpY + margen + 2, helpW - margen*2, helpX - margen*2);		
     }
-
-    var glitch = get(0,0,windowWidth,windowHeight);
-    if (voiceNum == 0){
-    	
-    }
-    else{
-    	glitchOffset = voiceNum * 0.5 + 1;
-
-    	/*blendMode(ADD);
-
-    	tint(255,0,0);
-    	image(glitch, random(glitchOffset*2) - glitchOffset,random(glitchOffset*2) - glitchOffset);*/
-    	
-
-
-	    blendMode(EXCLUSION);
-	    image(glitch, random(glitchOffset*2) - glitchOffset,random(glitchOffset*2) - glitchOffset);
-	    blendMode(SCREEN);
-	    image(glitch, random(glitchOffset*2) - glitchOffset,random(glitchOffset*2) - glitchOffset);
-    }
-    
+    ///------------------
 	
 	//save
 	if(savingScore){
-		image(pg1, 0, 0,windowWidth, windowHeight);
+		image(pg, 0, 0,windowWidth, windowHeight);
 		savingScore = false;
 		save();	
 	}
@@ -454,26 +490,7 @@ function getMiddleY() {
 }
 
 function createMiniCanvases() {
-	pg0 = createGraphics(canvasWidth, canvasHeight);
-	pg1 = createGraphics(canvasWidth, canvasHeight);
-	pg2 = createGraphics(canvasWidth, canvasHeight);
-
-	pg1.strokeWeight(0.2);
-	pg1.background(cBg);
-	pg1.stroke(cGrid);
-	for (var i=0; i < pg1.width; i+= 60){
-		pg1.line(i, 0, i, canvasHeight);
-	}
-	pg1.stroke(cGrid);
-	for (var i=0; i < pg1.height; i+= 60){
-		pg1.line(0, i, canvasWidth, i);
-	}
-
-	pg1.strokeWeight(1);
-	pg1.line(0,0,0,canvasHeight);
-	pg1.line(canvasWidth,0,canvasWidth,canvasHeight);
-	
-	pg0 = pg2 = pg1;
+	pg = createGraphics(canvasWidth, canvasHeight);
 }
 
 function isOnUI() {
@@ -492,6 +509,8 @@ function mousePressed() {
 	    }
 	}
 	else isDragging = true;
+
+	return false;
 }
 
 function mouseReleased() {
@@ -517,8 +536,8 @@ function Oscilador() {
 function Slider(_x, _y, _isHorizontal, _tipo) {
     this.x = _x;
     this.y = _y; 
-    this.w = buttonSize;
-    this.h = buttonSize;
+    this.w = buttonSize-1;
+    this.h = buttonSize-1;
     this.isHorizontal = _isHorizontal;
     this.tipo = _tipo;   
     this.icon;
@@ -572,7 +591,7 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 
 	this.reset();
 	if(this.isHorizontal){
-		this.x = this.min + sliderSize/2 + sliderSize/6;
+		//this.x = this.min + sliderSize/2 + sliderSize/6;
  		this.setValue();
  	}
 
@@ -647,8 +666,8 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 function Boton(_x, _y, _tipo) {
     this.x = _x;
     this.y = _y; 
-    this.w = buttonSize;
-    this.h = buttonSize;
+    this.w = buttonSize-1;
+    this.h = buttonSize-1;
     this.tipo = _tipo;   
     this.icon;
 
@@ -666,7 +685,7 @@ function Boton(_x, _y, _tipo) {
     	strokeWeight(1);
     	
     	if(this.checkMouse()) fill(cOver);
-    	else fill(cBg);
+    	else noFill();
 
     	rect(this.x, this.y, this.w, this.h);
 
@@ -691,6 +710,13 @@ function Boton(_x, _y, _tipo) {
     		}
     		else if(this.tipo == "clear"){
     			createMiniCanvases();
+    			for (var i=0; i < sliders.length; i++) {
+    				sliders[i].reset();    	
+   				}
+   				sliderX = 0;
+   				sliderR = 0;
+    			trainX = 0;
+    			trainR = 0;    			
     		}
     		else if(this.tipo == "stop"){
 
@@ -698,9 +724,7 @@ function Boton(_x, _y, _tipo) {
     				sliders[i].reset();    	
    				}
    				sliderX = 0;
-   				sliderR = 0;
-    			trainX = 0;
-    			trainR = 0;
+   				sliderR = 0;    			
     		}
     		else if(this.tipo == "save"){
     			savingScore = true;    			
@@ -724,12 +748,10 @@ function gotFile(file) {
 		var imgDroppedW = imgDropped.width;
 		var imgDroppedH = imgDropped.height;				
 
-		image(imgDropped, 0, 0, pg1.width, pg1.height);			
+		image(imgDropped, 0, 0, pg.width, pg.height);			
 		img = get(0,0,imgDroppedW,imgDroppedH);
 		
-		pg1.image(img, 0, 0, pg1.width, pg1.height);
-
-		pg0 = pg2 = pg1;
+		pg.image(img, 0, 0, pg.width, pg.height);
 
 	} else {
 		println('Not an image file!');
