@@ -1,8 +1,9 @@
 var WEBGL = false;
 var polyNum = 4; 
 
-var appName = "ROLL"
-var appVersion = "0.1";
+
+var appName = "r o l l "
+var appVersion = "v0.1";
 
 var trainX = 0;
 var trainR = 0;
@@ -43,8 +44,8 @@ var buttons = [];
 var sliders = [];
 
 
-if(WEBGL) var buttonsTypes = ["paint", "erase", "clear", "save", "help", "stop"];
-else var buttonsTypes = ["paint", "erase", "clear", "save", "help", "stop"];
+if(WEBGL) var buttonsTypes = ["paint", "erase", "clear", "save", "help"];
+else var buttonsTypes = ["paint", "erase", "clear", "save", "help"];
 var btnImg_paint;
 var btnImg_erase;
 var btnImg_clear;
@@ -53,7 +54,8 @@ var btnImg_save;
 var btnImg_help;
 var btnImg_rtrain;
 var btnImg_xtrain;
-var sliderSize = 150;
+var btnImg_volume;
+var sliderSize = 100;
 
 var collisionPoints = [];
 
@@ -120,6 +122,7 @@ function setup() {
 	btnImg_help = loadImage("img/help.png");
 	btnImg_rtrain = loadImage("img/cached.png");
 	btnImg_xtrain = loadImage("img/code-tags.png");
+	btnImg_volume = loadImage("img/volume-high.png");
 
   
 
@@ -128,6 +131,7 @@ function setup() {
     	oscilatorsFreq[i] = 0;
     }
 
+    /*
     for (var i=0; i < buttonsTypes.length; i++) {
     	if(i <= 4) buttons.push(new Boton(margen, i * (buttonSize + margen) + margen, buttonsTypes[i]));
     	else buttons.push(new Boton(margen, windowHeight - margen - buttonSize, buttonsTypes[i]));  	
@@ -135,6 +139,16 @@ function setup() {
 
     sliders.push(new Slider(margen, windowHeight - margen - buttonSize*2, false, "rtrain"));  	
     sliders.push(new Slider(margen + buttonSize, windowHeight - margen - buttonSize, true, "xtrain"));
+    sliders.push(new Slider(windowWidth - margen - buttonSize, windowHeight/2, false, "volume"));*/
+
+    for (var i=0; i < buttonsTypes.length; i++) {
+    	if(i <= 4) buttons.push(new Boton(margen, i * (buttonSize + margen) + margen, buttonsTypes[i]));
+    	else buttons.push(new Boton(margen, windowHeight - (margen + buttonSize)*4, buttonsTypes[i]));  	
+    }
+    sliders.push(new Slider(margen, windowHeight - (margen + buttonSize)*3, true, "rtrain"));  	
+    sliders.push(new Slider(margen, windowHeight - (margen + buttonSize)*2, true, "xtrain"));
+    sliders.push(new Slider(margen, windowHeight - (margen + buttonSize)*1, true, "volume"))
+
 
     textFont('Consolas');
 
@@ -436,7 +450,7 @@ function draw() {
     }
 	//help
 	if(helpShow){
-    	var helpW = 370;
+    	var helpW = 390;
 		var helpH = 274;
 		var helpX = windowWidth/2 - helpW/2;
     	var helpY = windowHeight/2 - helpH/2;
@@ -447,22 +461,22 @@ function draw() {
 		fill(0);
 		rect(helpX, helpY, helpW, helpH);
 
-
+		comidilla = "  - - - - - - -  ";
 		var txt1 = 
-		appName+" "+appVersion+"\n"+
+		comidilla + appName+" "+appVersion+comidilla+"\n"+
 		" \n"+
 		"HOW TO:\n"+
 		"click 'n drag to paint different voices.\n"+
 		"use eraser if you fuck up.\n"+
 		"use clear canvas if you really fuck up.\n"+		
 		"floppy to save, drop images to load.\n"+
-		"use sliders to give it swing.\n"+
+		"drag sliders to give it swing, right-click to reset.\n"+
 		" \n"+
 		"KNOWN BUGS & WORKAROUNDS:\n"+
 		"rotation and negative translation can break the paint accuracy, pause to reset matrix.\n"+
 		"in firefox, to load an image, you have to drop it twice.\n"+
 		" \n"+
-		"by jeremias babini\n"
+		comidilla + "by jeremias babini" +comidilla
 		;
 		fill(cButtons);
 		noStroke();
@@ -556,7 +570,8 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     }
 
     if(this.tipo == "rtrain") this.icon = btnImg_rtrain;
-	else if(this.tipo == "xtrain") this.icon = btnImg_xtrain;   
+	else if(this.tipo == "xtrain") this.icon = btnImg_xtrain;
+	else if(this.tipo == "volume") this.icon = btnImg_volume;
 
 	
 
@@ -630,7 +645,8 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     	strokeWeight(1);
 
     	if(this.isHorizontal){
-    		line(this.min + this.w/2, this.y + this.h/2, this.min + this.w/2 + sliderSize, this.y + this.h/2);
+    		//line(this.min + this.w/2, this.y + this.h/2, this.min + this.w/2 + sliderSize, this.y + this.h/2);
+    		line(this.min, this.y + this.h/2, this.min + this.w + sliderSize, this.y + this.h/2);
     	}
     	else{
     		line(this.x + this.w/2, this.min + this.h/2, this.x + this.w/2, this.min + this.h/2 - sliderSize);	
@@ -654,10 +670,15 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 
     this.checkClick = function() {
     	if(this.checkMouse()){
-    		 this.isBeingDragged = true;	
+    		if(mouseButton == LEFT){
+	    		this.isBeingDragged = true;	
 
-    		 if (this.isHorizontal) this.grabPoint = mouseX - this.x;
-    		 else this.grabPoint = mouseY - this.y; 	
+	    		if (this.isHorizontal) this.grabPoint = mouseX - this.x;
+	    		else this.grabPoint = mouseY - this.y; 	
+    		}
+    		else {
+	    		this.reset();
+    		}
     	}	
     }
 
