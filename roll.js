@@ -626,7 +626,9 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 
 	 	if(this.tipo == "rtrain") sliderR = value;
 		else if(this.tipo == "xtrain") sliderX = value;
-		else if(this.tipo == "volume") sliderV = map(value, -10,10,0.001,1);
+		else if(this.tipo == "volume") sliderV = map(value, -2.5,2.5,0.001,1);
+
+		
 	}
 
 
