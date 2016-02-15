@@ -139,7 +139,7 @@ function setup() {
 
     sliders.push(new Slider(margen, windowHeight - margen - buttonSize*2, false, "rtrain"));  	
     sliders.push(new Slider(margen + buttonSize, windowHeight - margen - buttonSize, true, "xtrain"));
-    sliders.push(new Slider(windowWidth - margen - buttonSize, windowHeight/2, false, "volume"));
+    sliders.push(new Slider(windowWidth - margen - buttonSize, windowHeight - margen - buttonSize, false, "volume"));
      
 
     textFont('Consolas');
@@ -435,11 +435,22 @@ function draw() {
 	stroke(cLines);
 	
 	for (var i=0; i < buttons.length; i++) {
+		if(i <= 4) buttons[i].setPosition(margen, i * (buttonSize + margen) + margen);
+		else if (i == 5) buttons[i].setPosition(margen, windowHeight - margen - buttonSize); 
+		else buttons[i].setPosition(windowWidth - buttonSize - margen, margen);
+
     	buttons[i].display();    	
     }
     for (var i=0; i < sliders.length; i++) {
+    	if(i == 0) sliders[i].setPosition(margen, windowHeight - margen - buttonSize*2);
+    	else if(i == 1) sliders[i].setPosition(margen + buttonSize, windowHeight - margen - buttonSize);
+    	else if(i == 2) sliders[i].setPosition(windowWidth - margen - buttonSize, windowHeight - margen - buttonSize);    	
+
     	sliders[i].display();    	
-    }
+    } 
+    
+
+
 	//help
 	if(helpShow){
     	var helpW = 390;
@@ -509,6 +520,7 @@ function isOnUI() {
 	if (mouseX < uiWidth) return true;
 	else if(mouseX < uiWidth + sliderSize + buttonSize && mouseY > windowHeight - buttonSize - margen) return true;
 	else if(mouseX > windowWidth - buttonSize - margen && mouseY < buttonSize + margen) return true;
+	else if(mouseX > windowWidth - buttonSize - margen && mouseY > windowHeight - buttonSize*3 - margen*2) return true;
 	else return false;
 }
 
@@ -571,23 +583,48 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     if(this.tipo == "rtrain") this.icon = btnImg_rtrain;
 	else if(this.tipo == "xtrain") this.icon = btnImg_xtrain;   
 
+	this.setPosition = function(__x , __y) {
+		
+		if(this.isHorizontal){
+	    	this.min = __x; 
+	    	this.max = __x + sliderSize;
+
+	    	this.y = __y;
+	    }
+	    else{
+	    	if(this.min > __y) this.y -= this.min - __y;
+	    	else if(__y > this.min) this.y += __y - this.min;
+
+	    	this.min = __y; 
+	    	this.max = __y - sliderSize;
+
+
+	    	this.x = __x;
+	    }
+	}
 	
 
 	this.setValue = function(){
+	 	value = 0;
+
 	 	if(this.isHorizontal){
-	 		sliderX = ((this.x-this.min) * maxX) / sliderSize;
+	 		value = ((this.x-this.min) * maxX) / sliderSize;
     			
-			if (sliderX < maxX/2) sliderX = (maxX - sliderX)*-1 + maxX/2;
-			else if (sliderX > maxX/2) sliderX -= maxX/2;
-			else sliderX = 0;
+			if (value < maxX/2) value = (maxX - value)*-1 + maxX/2;
+			else if (value > maxX/2) value -= maxX/2;
+			else value = 0;
 	 	}
 	 	else{
-	 		sliderR = ((this.y-this.min) * maxR) / sliderSize *-1;
+	 		value = ((this.y-this.min) * maxR) / sliderSize *-1;
     			
-			if (sliderR < maxR/2) sliderR = (maxR - sliderR)*-1 + maxR/2;
-			else if (sliderR > maxR/2) sliderR -= maxR/2;
-			else sliderR = 0;
+			if (value < maxR/2) value = (maxR - value)*-1 + maxR/2;
+			else if (value > maxR/2) value -= maxR/2;
+			else value = 0;
 	 	}
+
+	 	if(this.tipo == "rtrain") sliderR = value;
+		else if(this.tipo == "xtrain") sliderX = value;
+		else if(this.tipo == "volume") sliderV = map(value, -10,10,0.001,1);
 	}
 
 
@@ -689,7 +726,10 @@ function Boton(_x, _y, _tipo) {
 	else if(this.tipo == "help") this.icon = btnImg_help;
 	else if(this.tipo == "fullscreen") this.icon = btnImg_fullscreen;
 	     
-
+	this.setPosition = function(__x , __y) {
+		this.x = __x;
+		this.y = __y;
+	}
 
     this.display = function() {
     	stroke(cButtons);
@@ -774,8 +814,9 @@ function gotFile(file) {
 
 function windowResized() {
 	print("MOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE");
-    resizeCanvas(windowWidth, windowHeight);
-    createMiniCanvases();
+	createMiniCanvases();
+	resizeCanvas(windowWidth, windowHeight);
+	
 	for (var i=0; i < sliders.length; i++) {
 		sliders[i].reset();    	
 	}
@@ -783,6 +824,9 @@ function windowResized() {
 	sliderR = 0;
 	trainX = 0;
 	trainR = 0; 
+
+    
+	
 
 }
 
