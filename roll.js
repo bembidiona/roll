@@ -79,12 +79,16 @@ var vibratoOffset = 2;
 
 var colorKey;
 
+var c;
+
 window.addEventListener("contextmenu", function(e) { e.preventDefault(); })
 
-function setup() {  
-	
-	noSmooth();	
+var link;
 
+function setup() {  
+
+	link = createA("http://www.jeremiasbabini.com","jeremias babini", "_blank");
+	
 	c1 = color(0,0,0);
 	c2 = color(85,255,255);
 	c3 = color(255,85,255);
@@ -100,9 +104,7 @@ function setup() {
 
 	colorKey = green(cLines);
 
-	var c = createCanvas(windowWidth, windowHeight, WEBGL);
-	/*if(WEBGL) c = createCanvas(windowWidth, windowHeight, "webgl");
-	else c = createCanvas(windowWidth, windowHeight, "2d");*/
+	c = createCanvas(windowWidth, windowHeight, WEBGL);	
 	c.drop(gotFileHack); 
 
 	windowWidth = windowWidth;
@@ -115,7 +117,7 @@ function setup() {
 
   	btnImg_paint = loadImage("img/brush.png");
 	btnImg_erase = loadImage("img/eraser.png");
-	btnImg_clear = loadImage("img/checkbox-blank.png");
+	btnImg_clear = loadImage("img/new.png");
 	btnImg_stop = loadImage("img/pause.png");
 	btnImg_save = loadImage("img/floppy.png");	
 	btnImg_help = loadImage("img/helpy.png");
@@ -170,6 +172,8 @@ function draw() {
 	background(cBg);
 	cursor(CROSS);
 
+
+
 	push();
 	translate(windowWidth/2, windowHeight/2);
 	rotate(trainR);
@@ -202,7 +206,12 @@ function draw() {
 
 	pop();
 
-	
+	//save
+	if(savingScore){
+		image(c, 0, 0,windowWidth, windowHeight);
+		savingScore = false;
+		save();	
+	}	
 
 	if (isDragging){
 
@@ -411,12 +420,6 @@ function draw() {
     else{
     	glitchOffset = voiceNum * 0.9 + 0.5;
 
-    	/*blendMode(ADD);
-    	tint(255,0,0);
-    	image(glitch, random(glitchOffset*2) - glitchOffset,random(glitchOffset*2) - glitchOffset);*/
-    	
-
-
 	    blendMode(EXCLUSION);
 	    image(glitch, random(glitchOffset*2) - glitchOffset,random(glitchOffset*2) - glitchOffset);
 	    blendMode(ADD);
@@ -432,6 +435,45 @@ function draw() {
 	stroke(cPlayer);
 	line(windowWidth/2,0,windowWidth/2,windowHeight);
 	stroke(cLines);
+
+	//help
+	if(helpShow){
+    	var helpW = 390;
+		var helpH = 200;
+		var helpX = windowWidth/2 - helpW/2;
+    	var helpY = windowHeight/2 - helpH/2;
+
+    	textAlign(CENTER, CENTER);
+
+    	stroke(cPlayer);
+		fill(0);
+		rect(helpX, helpY, helpW, helpH);
+
+		var txt1 = 
+		" ┌ - - - - - - - -  " + appName+" "+appVersion+"  - - - - - - - - ┐ "+"\n"+
+		//"And experiment trying to emulate the Unix systems\n"+		
+		" \n"+
+		"WUT:\n"+
+		"visual composer for N saw oscilators.\n"+
+		"kinda inspired by the mythic UPIC by Xenakis.\n"+			
+		" \n"+
+		"HOW:\n"+
+		"click 'n drag to paint different voices.\n"+
+		"drag bottom-left sliders to give it swing.\n"+	
+		" \n"+
+		" └ - - - - - - -  " + "by jeremias babini" + "  - - - - - - - ┘ "
+		;
+		fill(cButtons);
+		noStroke();
+		text(txt1, helpX + helpW/2 +3, helpY + margen + 2, helpW - margen*2, helpX - margen*2);	
+
+		link.position(helpX + helpW/2 - 40, helpY + helpH - 34);
+		link.show();		
+    }
+    else {
+    	link.hide();
+    }
+    ///------------------
 	
 	for (var i=0; i < buttons.length; i++) {
 		if(i <= 4) buttons[i].setPosition(margen, i * (buttonSize + margen) + margen);
@@ -447,49 +489,6 @@ function draw() {
 
     	sliders[i].display(); 
     }
-   
-    
-
-
-	//help
-	if(helpShow){
-    	var helpW = 390;
-		var helpH = 185;
-		var helpX = windowWidth/2 - helpW/2;
-    	var helpY = windowHeight/2 - helpH/2;
-
-    	textAlign(CENTER, CENTER);
-
-    	stroke(cPlayer);
-		fill(0);
-		rect(helpX, helpY, helpW, helpH);
-
-		var txt1 = 
-		"  - - - - - - - -  " + appName+" "+appVersion+"  - - - - - - - -  "+"\n"+
-		//"And experiment trying to emulate the Unix systems\n"+		
-		" \n"+
-		"HOW:\n"+
-		"click 'n drag to paint different voices.\n"+
-		"use eraser if you fuck up.\n"+
-		"use clear canvas if you really fuck up.\n"+		
-		"floppy to save, drop images to load.\n"+
-		"drag bottom-left sliders to give it swing\n"+
-		" \n"+		
-		"  - - - - - - -  " + "by jeremias babini" + "  - - - - - - -  "
-		;
-		fill(cButtons);
-		noStroke();
-		text(txt1, helpX + helpW/2 +3, helpY + margen + 2, helpW - margen*2, helpX - margen*2);		
-    }
-    ///------------------
-    
-	
-	//save
-	if(savingScore){
-		image(pg, 0, 0,windowWidth, windowHeight);
-		savingScore = false;
-		save();	
-	}
 	
 }
 
@@ -521,7 +520,7 @@ function isOnUI() {
 }
 
 function mousePressed() {
-	if(helpShowFirst) {
+	if(helpShowFirst) {		
 		helpShowFirst = false;
 		helpShow = false;
 	}
@@ -771,9 +770,9 @@ function Boton(_x, _y, _tipo) {
 	    	fix = 3;
 	    	if(this.tipo == "paint") text("paint voices", this.x + buttonSize + margen, this.y + buttonSize/2 + fix);
 		    else if(this.tipo == "erase") text("erase tool", this.x + buttonSize + margen, this.y + buttonSize/2 +fix);
-		    else if(this.tipo == "clear") text("reset canvas", this.x + buttonSize + margen, this.y + buttonSize/2+fix);
+		    else if(this.tipo == "clear") text("new canvas", this.x + buttonSize + margen, this.y + buttonSize/2+fix);
 			else if(this.tipo == "stop") ;//text("paint", this.x + buttonSize + margen, this.y + buttonSize/2);
-			else if(this.tipo == "save") text("download canvas", this.x + buttonSize + margen, this.y + buttonSize/2+fix);
+			else if(this.tipo == "save") text("\n save canvas \n [drop .png to load]", this.x + buttonSize + 4, this.y + buttonSize/2 - 21);
 			else if(this.tipo == "help") text("help/about", this.x + buttonSize + margen, this.y + buttonSize/2+fix);
 			else if(this.tipo == "fullscreen") {textAlign(RIGHT, CENTER);; text("go fullscreen", this.x, this.y + buttonSize/2+fix);}
     	}    	

@@ -1,0 +1,16 @@
+a:link {
+	font-family:"Consolas";
+    color: #ffffff;
+    font-size:12px;
+    text-decoration: none;
+}
+a:hover {
+    color: #ffffff;
+    text-decoration: line-through;    
+}
+a:visited {
+    color: #ffffff;
+}
+a:active {
+    color: #ffffff;
+}

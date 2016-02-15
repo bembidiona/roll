@@ -1,2 +1,5 @@
+BUG: save score graba todo el canvas
+BGG: Save canvas, al cambiar el size de la ventana, resetea el canvas
 - probar si se puede sacar p5.sound
+
 
