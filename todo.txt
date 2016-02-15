@@ -1,3 +1,2 @@
-- se fuckea el dibujado si el canvas tiene translacion negativa
-- que arranque ya scrolleando
+- probar si se puede sacar p5.sound
 
