@@ -129,10 +129,7 @@ function setup() {
 
   
 
-  	for (var i=0; i<polyNum; i++) {
-    	oscilators.push(new Oscilador());
-    	oscilatorsFreq[i] = 0;
-    }
+  	
 
     for (var i=0; i < buttonsTypes.length; i++) {
     	if(i <= 4) buttons.push(new Boton(margen, i * (buttonSize + margen) + margen, buttonsTypes[i]));
@@ -326,20 +323,20 @@ function draw() {
 	
 	
 
+	
+
+	//----SOUND
 	var listenerImg
 	if(WEBGL) listenerImg = get(windowWidth/2, 0, 4, windowHeight);
 	else listenerImg = get(windowWidth/2 - 2, 0, 4, windowHeight);
-
-	//----SOUND
-
 	
 	var pix;
 	var safeWait = 0;
 	var voiceNum = 0;
-
 	for (var i=0; i<polyNum; i++) {
     	oscilatorsFreq[i] = 0;
     }
+    polyNum = 0;
 
 	for (var i = windowHeight; i > 0; i--){
 		if(safeWait <= 0){
@@ -347,6 +344,7 @@ function draw() {
 
 			if(pix[1] == colorKey){
 				safeWait = 20; //safe
+				polyNum++;
 
 				var f = windowHeight - i;
 				oscFreq = ( 550 * f ) / windowHeight + 150;
@@ -370,23 +368,12 @@ function draw() {
 		}
 		else safeWait--;
 		
-	}
-
-
-	var w = map(mouseX, 0, width, 0, 1);
-  	w = constrain(w, 0, 1);
+	}	
  	
 	for (var i = 0; i < polyNum; i++){
 		if(oscilatorsFreq[i] == 0){
-			//oscilators[i].osc.amp(0);
-			//oscilators[i].osc.setVolume(0.5)
 		}
 		else {
-			//oscilators[i].osc.freq(oscilatorsFreq[i]);
-			//oscilators[i].osc.amp(0.8);
-
-
-
 			ISaw.play({
 			    volume  : sliderV,
 			    wait    : 0,     // Time in seconds between calling play() and actually triggering the note.
@@ -403,14 +390,11 @@ function draw() {
 			    //panning : [1, -1, 10],
 			    //filter  : {frequency : 900}
 			    //delay   : {delayTime : .8}
-			})
-			
-			
+			})		
 		}
-
-		//oscilators[i].osc.width(w);
 	}
-	
+	//---------------------
+
 	
 
     var glitch = get(0,0,windowWidth,windowHeight);
