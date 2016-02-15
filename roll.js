@@ -454,7 +454,7 @@ function draw() {
 	//help
 	if(helpShow){
     	var helpW = 390;
-		var helpH = 274;
+		var helpH = 185;
 		var helpX = windowWidth/2 - helpW/2;
     	var helpY = windowHeight/2 - helpH/2;
 
