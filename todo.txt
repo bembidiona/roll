@@ -1,4 +1,3 @@
-- arrancar con el help activado
+- se fuckea el dibujado si el canvas tiene translacion negativa
 - que arranque ya scrolleando
-- poner un boton para que frene, pero que no resetee la posicion del canvas
-- intentar que no pegue el golpaso de audio cuando carga
+

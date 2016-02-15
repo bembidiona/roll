@@ -19,7 +19,8 @@ var firstNode = false;
 var jumpTest = false;
 var jumpTestOld = false;
 
-var helpShow = false;
+var helpShow = true;
+var helpShowFirst = true;
 
 var cBg;
 var cLines;
@@ -41,6 +42,7 @@ var buttonSize = 40;
 var buttons = [];
 var sliders = [];
 
+var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
 if(WEBGL) var buttonsTypes = ["paint", "erase", "clear", "save", "help", "stop"];
 else var buttonsTypes = ["paint", "erase", "clear", "save", "help", "stop"];
@@ -101,7 +103,7 @@ function setup() {
 	var c = createCanvas(windowWidth, windowHeight, WEBGL);
 	/*if(WEBGL) c = createCanvas(windowWidth, windowHeight, "webgl");
 	else c = createCanvas(windowWidth, windowHeight, "2d");*/
-	c.drop(gotFile); 
+	c.drop(gotFileHack); 
 
 	windowWidth = windowWidth;
 	windowHeight = windowHeight;
@@ -114,15 +116,14 @@ function setup() {
   	btnImg_paint = loadImage("img/brush.png");
 	btnImg_erase = loadImage("img/eraser.png");
 	btnImg_clear = loadImage("img/checkbox-blank.png");
-	btnImg_stop = loadImage("img/stop.png");
-	btnImg_save = loadImage("img/save.png");
-	btnImg_stop = loadImage("img/stop.png");
-	btnImg_save = loadImage("img/save.png");
-	btnImg_help = loadImage("img/help.png");
+	btnImg_stop = loadImage("img/pause.png");
+	btnImg_save = loadImage("img/floppy.png");	
+	btnImg_help = loadImage("img/helpy.png");
+
 	btnImg_rtrain = loadImage("img/cached.png");
 	btnImg_xtrain = loadImage("img/code-tags.png");
-	btnImg_volume = loadImage("img/save.png");
-	btnImg_fullscreen = loadImage("img/volume-high.png");
+	btnImg_volume = loadImage("img/volume-medium.png");
+	btnImg_fullscreen = loadImage("img/fullscreen.png");
 
   
 
@@ -437,17 +438,18 @@ function draw() {
 	for (var i=0; i < buttons.length; i++) {
 		if(i <= 4) buttons[i].setPosition(margen, i * (buttonSize + margen) + margen);
 		else if (i == 5) buttons[i].setPosition(margen, windowHeight - margen - buttonSize); 
-		else buttons[i].setPosition(windowWidth - buttonSize - margen, margen);
+		else if (i == 6) buttons[i].setPosition(windowWidth - buttonSize - margen, margen);
 
-    	buttons[i].display();    	
+    	buttons[i].display();    	    	 	
     }
     for (var i=0; i < sliders.length; i++) {
     	if(i == 0) sliders[i].setPosition(margen, windowHeight - margen - buttonSize*2);
     	else if(i == 1) sliders[i].setPosition(margen + buttonSize, windowHeight - margen - buttonSize);
     	else if(i == 2) sliders[i].setPosition(windowWidth - margen - buttonSize, windowHeight - margen - buttonSize);    	
 
-    	sliders[i].display();    	
-    } 
+    	sliders[i].display(); 
+    }
+   
     
 
 
@@ -464,29 +466,25 @@ function draw() {
 		fill(0);
 		rect(helpX, helpY, helpW, helpH);
 
-		comidilla = "  - - - - - - -  ";
 		var txt1 = 
-		comidilla + appName+" "+appVersion+comidilla+"\n"+
+		"  - - - - - - - -  " + appName+" "+appVersion+"  - - - - - - - -  "+"\n"+
+		//"And experiment trying to emulate the Unix systems\n"+		
 		" \n"+
-		"HOW TO:\n"+
+		"HOW:\n"+
 		"click 'n drag to paint different voices.\n"+
 		"use eraser if you fuck up.\n"+
 		"use clear canvas if you really fuck up.\n"+		
 		"floppy to save, drop images to load.\n"+
-		"drag sliders to give it swing, right-click to reset.\n"+
-		" \n"+
-		"KNOWN BUGS & WORKAROUNDS:\n"+
-		"rotation and negative translation can break the paint accuracy, pause to reset matrix.\n"+
-		"in firefox, to load an image, you have to drop it twice.\n"+
-		" \n"+
-		comidilla + "by jeremias babini" +comidilla
+		"drag bottom-left sliders to give it swing\n"+
+		" \n"+		
+		"  - - - - - - -  " + "by jeremias babini" + "  - - - - - - -  "
 		;
 		fill(cButtons);
 		noStroke();
 		text(txt1, helpX + helpW/2 +3, helpY + margen + 2, helpW - margen*2, helpX - margen*2);		
     }
     ///------------------
-    println(helpShow);
+    
 	
 	//save
 	if(savingScore){
@@ -525,6 +523,11 @@ function isOnUI() {
 }
 
 function mousePressed() {
+	if(helpShowFirst) {
+		helpShowFirst = false;
+		helpShow = false;
+	}
+
   	if(isOnUI()){
 		for (var i=0; i < buttons.length; i++) {
 	    	buttons[i].checkClick();    	
@@ -582,6 +585,7 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 
     if(this.tipo == "rtrain") this.icon = btnImg_rtrain;
 	else if(this.tipo == "xtrain") this.icon = btnImg_xtrain;   
+	else if(this.tipo == "volume") this.icon = btnImg_volume;
 
 	this.setPosition = function(__x , __y) {
 		
@@ -640,6 +644,7 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 	}
 
 	this.reset();
+	if(this.tipo == "xtrain") this.x += sliderSize/6; 
 	this.setValue();
 
 	
@@ -689,6 +694,18 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     	rect(this.x, this.y, this.w, this.h);
 
     	image(this.icon, this.x + buttonSize/2 - this.icon.width/2, this.y + buttonSize/2 - this.icon.height/2);
+
+
+    	if(helpShow){
+    		textAlign(LEFT, CENTER);
+    		noStroke();
+	    	fill(cGrid);
+	    	fix = 3;
+	    	if(this.tipo == "rtrain") text("\n set rotation \n and traslation \n of the canvas", buttonSize + margen + 12, windowHeight - 120);
+	    	//if(this.tipo == "rtrain") text("set rotation", this.x + buttonSize + margen, this.y + buttonSize/2 + fix);	    
+	    	//else if(this.tipo == "xtrain") text("set translation", this.x + buttonSize + margen, this.y + buttonSize - 6);	    
+			if(this.tipo == "volume") {textAlign(RIGHT, CENTER);; text("set volume", this.x, this.y + buttonSize/2 + fix);}
+    	} 
     }
 
     this.checkMouse = function() {
@@ -746,6 +763,20 @@ function Boton(_x, _y, _tipo) {
     	rect(this.x, this.y, this.w, this.h);
 
     	image(this.icon, this.x + buttonSize/2 - this.icon.width/2, this.y + buttonSize/2 - this.icon.height/2);
+
+    	if(helpShow){
+    		textAlign(LEFT, CENTER);
+    		noStroke();
+	    	fill(cGrid);
+	    	fix = 3;
+	    	if(this.tipo == "paint") text("paint voices", this.x + buttonSize + margen, this.y + buttonSize/2 + fix);
+		    else if(this.tipo == "erase") text("erase tool", this.x + buttonSize + margen, this.y + buttonSize/2 +fix);
+		    else if(this.tipo == "clear") text("reset canvas", this.x + buttonSize + margen, this.y + buttonSize/2+fix);
+			else if(this.tipo == "stop") ;//text("paint", this.x + buttonSize + margen, this.y + buttonSize/2);
+			else if(this.tipo == "save") text("download canvas", this.x + buttonSize + margen, this.y + buttonSize/2+fix);
+			else if(this.tipo == "help") text("help/about", this.x + buttonSize + margen, this.y + buttonSize/2+fix);
+			else if(this.tipo == "fullscreen") {textAlign(RIGHT, CENTER);; text("go fullscreen", this.x, this.y + buttonSize/2+fix);}
+    	}    	
     }
 
     this.checkMouse = function() {
@@ -816,11 +847,21 @@ function gotFile(file) {
 		println('Not an image file!');
 	}	
 }
+function gotFileHack(file){
+	fuckingFirefoxFile = file;
+	if(isFirefox){
+		setTimeout(function() {gotFile(fuckingFirefoxFile) ;}, 100);
+		if(!imgExist) setTimeout(function() {gotFile(fuckingFirefoxFile) ;}, 200);
+	}
 
-function windowResized() {
-	print("MOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE");
+	gotFile(file);	 
+}
+
+function windowResized() {	
 	createMiniCanvases();
 	resizeCanvas(windowWidth, windowHeight);
+
+	textFont('Consolas');
 	
 	for (var i=0; i < sliders.length; i++) {
 		sliders[i].reset();    	
@@ -829,10 +870,6 @@ function windowResized() {
 	sliderR = 0;
 	trainX = 0;
 	trainR = 0; 
-
-    
-	
-
 }
 
 
