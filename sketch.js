@@ -245,10 +245,13 @@ function draw() {
         		   		
 				nx = nx - trainX;
 				jumpTest = true;
+				
 			}
 			else {
-				nx = windowWidth - (windowWidth - nx);				
+				nx = windowWidth - (nx + trainX) + (windowWidth/2 - trainX*-1)*2;				
+				nx = windowWidth - nx;
 				jumpTest = false;
+				
 			}	
         }		
 
@@ -280,7 +283,7 @@ function draw() {
 				pg.line(pointXOld, mouseYOld, pg.width, getMiddleY());
 			}
 		}
-		///--------------		
+		
 
 		pointXOld = nx;
 		mouseYOld = ny;
@@ -361,11 +364,6 @@ function draw() {
 	}
 
 
-	/*vibrato += 0.5;
-	var seno = Math.sin(vibrato);
-	var ampy = map(seno,-1,1, 0.2, 0.8);*/
-	
-	
 	var w = map(mouseX, 0, width, 0, 1);
   	w = constrain(w, 0, 1);
  	
@@ -404,7 +402,7 @@ function draw() {
 		//oscilators[i].osc.width(w);
 	}
 	
-
+	
 
     var glitch = get(0,0,windowWidth,windowHeight);
     if (voiceNum == 0){
