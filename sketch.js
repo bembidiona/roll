@@ -1,7 +1,6 @@
 var WEBGL = false;
 var polyNum = 4; 
 
-
 var appName = "r o l l "
 var appVersion = "v0.1";
 
@@ -37,16 +36,14 @@ var oscilatorsFreq = [];
 var uiWidth = 80;
 var margen = 10;
 
-var canvasWidth;
-var canvasHeight;
 
 var buttonSize = 40;
 var buttons = [];
 var sliders = [];
 
 
-if(WEBGL) var buttonsTypes = ["paint", "erase", "clear", "save", "help"];
-else var buttonsTypes = ["paint", "erase", "clear", "save", "help"];
+if(WEBGL) var buttonsTypes = ["paint", "erase", "clear", "save", "help", "stop"];
+else var buttonsTypes = ["paint", "erase", "clear", "save", "help", "stop"];
 var btnImg_paint;
 var btnImg_erase;
 var btnImg_clear;
@@ -57,7 +54,7 @@ var btnImg_rtrain;
 var btnImg_xtrain;
 var btnImg_volume;
 var btnImg_fullscreen;
-var sliderSize = 100;
+var sliderSize = 90;
 
 var collisionPoints = [];
 
@@ -106,8 +103,8 @@ function setup() {
 	else c = createCanvas(windowWidth, windowHeight, "2d");*/
 	c.drop(gotFile); 
 
-	canvasWidth = windowWidth;
-	canvasHeight = windowHeight;
+	windowWidth = windowWidth;
+	windowHeight = windowHeight;
 
 	createMiniCanvases();
 
@@ -124,7 +121,7 @@ function setup() {
 	btnImg_help = loadImage("img/help.png");
 	btnImg_rtrain = loadImage("img/cached.png");
 	btnImg_xtrain = loadImage("img/code-tags.png");
-	btnImg_volume = loadImage("img/volume-high.png");
+	btnImg_volume = loadImage("img/save.png");
 	btnImg_fullscreen = loadImage("img/volume-high.png");
 
   
@@ -134,26 +131,16 @@ function setup() {
     	oscilatorsFreq[i] = 0;
     }
 
-    /*
     for (var i=0; i < buttonsTypes.length; i++) {
     	if(i <= 4) buttons.push(new Boton(margen, i * (buttonSize + margen) + margen, buttonsTypes[i]));
     	else buttons.push(new Boton(margen, windowHeight - margen - buttonSize, buttonsTypes[i]));  	
     }
+    buttons.push(new Boton(windowWidth - buttonSize - margen, margen, "fullscreen"));
 
     sliders.push(new Slider(margen, windowHeight - margen - buttonSize*2, false, "rtrain"));  	
     sliders.push(new Slider(margen + buttonSize, windowHeight - margen - buttonSize, true, "xtrain"));
-    sliders.push(new Slider(windowWidth - margen - buttonSize, windowHeight/2, false, "volume"));*/
-
-    for (var i=0; i < buttonsTypes.length; i++) {
-    	if(i <= 4) buttons.push(new Boton(margen, i * (buttonSize + margen) + margen, buttonsTypes[i]));
-    	else buttons.push(new Boton(margen, windowHeight - (margen + buttonSize)*4, buttonsTypes[i]));  	
-    }
-    buttons.push(new Boton(windowWidth - buttonSize - margen, margen, "fullscreen")); 
-
-    sliders.push(new Slider(margen, windowHeight - (margen + buttonSize)*3, true, "rtrain"));  	
-    sliders.push(new Slider(margen, windowHeight - (margen + buttonSize)*2, true, "xtrain"));
-    sliders.push(new Slider(margen, windowHeight - (margen + buttonSize)*1, true, "volume"))
-
+    sliders.push(new Slider(windowWidth - margen - buttonSize, windowHeight/2, false, "volume"));
+     
 
     textFont('Consolas');
 
@@ -183,34 +170,34 @@ function draw() {
 	cursor(CROSS);
 
 	push();
-	translate(canvasWidth/2, canvasHeight/2);
+	translate(windowWidth/2, windowHeight/2);
 	rotate(trainR);
-	translate(-canvasWidth/2, -canvasHeight/2);
+	translate(-windowWidth/2, -windowHeight/2);
 
 	//grid
 	strokeWeight(0.2);
 	stroke(cGrid);
-	gridW = canvasWidth/16;
-	gridH = canvasHeight/16;
-	for (var i=-canvasWidth; i < canvasWidth*2; i+= gridW){
-		line(i+trainX, -canvasHeight, i+trainX, canvasHeight*3);
+	gridW = windowWidth/16;
+	gridH = windowHeight/16;
+	for (var i=-windowWidth; i < windowWidth*2; i+= gridW){
+		line(i+trainX, -windowHeight, i+trainX, windowHeight*3);
 	}
 	stroke(cGrid);
-	for (var i=-canvasHeight; i < canvasHeight*2; i+= gridH){
-		line(-canvasWidth, i, canvasWidth*3, i);
+	for (var i=-windowHeight; i < windowHeight*2; i+= gridH){
+		line(-windowWidth, i, windowWidth*3, i);
 	}
 	strokeWeight(1);
 	noFill();
-	line(-canvasWidth,-1,canvasWidth*3,-1);
-	line(-canvasWidth,canvasHeight+1,canvasWidth*3,canvasHeight+1);
-	line(-canvasWidth+trainX,0,-canvasWidth+trainX,canvasHeight);
-	line(-1+trainX,0,-1+trainX,canvasHeight);
-	line(canvasWidth+1+trainX,0,canvasWidth+1+trainX,canvasHeight);
+	line(-windowWidth,-1,windowWidth*3,-1);
+	line(-windowWidth,windowHeight+1,windowWidth*3,windowHeight+1);
+	line(-windowWidth+trainX,0,-windowWidth+trainX,windowHeight);
+	line(-1+trainX,0,-1+trainX,windowHeight);
+	line(windowWidth+1+trainX,0,windowWidth+1+trainX,windowHeight);
 	//---
 
-	image(pg, -canvasWidth + trainX, 0);
+	image(pg, -windowWidth + trainX, 0);
 	image(pg, 0 + trainX, 0);
-	image(pg, canvasWidth + trainX, 0);
+	image(pg, windowWidth + trainX, 0);
 
 	pop();
 
@@ -233,8 +220,8 @@ function draw() {
 		
 		x = mouseX;
 		y = mouseY;
-		cx = canvasWidth/2;
-		cy = canvasHeight/2;
+		cx = windowWidth/2;
+		cy = windowHeight/2;
         cos = Math.cos(trainR);
         sin = Math.sin(trainR);
 
@@ -247,19 +234,19 @@ function draw() {
 				jumpTest = true;
 			}
 			else {
-				nx = canvasWidth - trainX + nx;
+				nx = windowWidth - trainX + nx;
 				jumpTest = false;
 			}	
         }
         else{
         	
-        	if(mouseX < canvasWidth + trainX){     
+        	if(mouseX < windowWidth + trainX){     
         		   		
 				nx = nx - trainX;
 				jumpTest = true;
 			}
 			else {
-				nx = canvasWidth - (canvasWidth - nx);				
+				nx = windowWidth - (windowWidth - nx);				
 				jumpTest = false;
 			}	
         }		
@@ -300,7 +287,7 @@ function draw() {
 	}
 	
 	if(sliderX > 0){
-		if(trainX < canvasWidth) trainX += sliderX;
+		if(trainX < windowWidth) trainX += sliderX;
 		else {
 			trainX = 0;
 
@@ -308,7 +295,7 @@ function draw() {
 		}
 	}
 	if (sliderX < 0){
-		if(trainX > -canvasWidth) trainX += sliderX;
+		if(trainX > -windowWidth) trainX += sliderX;
 		else {
 			trainX = 0;
 			justWarped = true;
@@ -327,8 +314,8 @@ function draw() {
 	
 
 	var listenerImg
-	if(WEBGL) listenerImg = get(canvasWidth/2, 0, 4, canvasHeight);
-	else listenerImg = get(canvasWidth/2 - 2, 0, 4, canvasHeight);
+	if(WEBGL) listenerImg = get(windowWidth/2, 0, 4, windowHeight);
+	else listenerImg = get(windowWidth/2 - 2, 0, 4, windowHeight);
 
 	//----SOUND
 
@@ -341,16 +328,16 @@ function draw() {
     	oscilatorsFreq[i] = 0;
     }
 
-	for (var i = canvasHeight; i > 0; i--){
+	for (var i = windowHeight; i > 0; i--){
 		if(safeWait <= 0){
 			pix = listenerImg.get(2,i-1);
 
 			if(pix[1] == colorKey){
 				safeWait = 20; //safe
 
-				var f = canvasHeight - i;
-				oscFreq = ( 550 * f ) / canvasHeight + 150;
-				oscFreq = map(f, 0, canvasHeight, 20, 500);
+				var f = windowHeight - i;
+				oscFreq = ( 550 * f ) / windowHeight + 150;
+				oscFreq = map(f, 0, windowHeight, 20, 500);
 				
 				oscilatorsFreq[voiceNum] = oscFreq;
 				voiceNum++;
@@ -415,8 +402,6 @@ function draw() {
 
 		//oscilators[i].osc.width(w);
 	}
-
-	print("sliderV:"+sliderV);
 	
 
 
@@ -446,7 +431,7 @@ function draw() {
 	blendMode(NORMAL);
 	strokeWeight(2);
 	stroke(cPlayer);
-	line(canvasWidth/2,0,canvasWidth/2,canvasHeight);
+	line(windowWidth/2,0,windowWidth/2,windowHeight);
 	stroke(cLines);
 	
 	for (var i=0; i < buttons.length; i++) {
@@ -490,6 +475,7 @@ function draw() {
 		text(txt1, helpX + helpW/2 +3, helpY + margen + 2, helpW - margen*2, helpX - margen*2);		
     }
     ///------------------
+    println(helpShow);
 	
 	//save
 	if(savingScore){
@@ -516,7 +502,7 @@ function getMiddleY() {
 }
 
 function createMiniCanvases() {
-	pg = createGraphics(canvasWidth, canvasHeight);
+	pg = createGraphics(windowWidth, windowHeight);
 }
 
 function isOnUI() {
@@ -527,8 +513,6 @@ function isOnUI() {
 }
 
 function mousePressed() {
-  	
-
   	if(isOnUI()){
 		for (var i=0; i < buttons.length; i++) {
 	    	buttons[i].checkClick();    	
@@ -540,8 +524,6 @@ function mousePressed() {
 	else isDragging = true;
 
 	return false;
-
-
 }
 
 function mouseReleased() {
@@ -587,35 +569,25 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     }
 
     if(this.tipo == "rtrain") this.icon = btnImg_rtrain;
-	else if(this.tipo == "xtrain") this.icon = btnImg_xtrain;
-	else if(this.tipo == "volume") this.icon = btnImg_volume;
+	else if(this.tipo == "xtrain") this.icon = btnImg_xtrain;   
 
 	
 
 	this.setValue = function(){
-		value = 0;
-
 	 	if(this.isHorizontal){
-	 		value = ((this.x-this.min) * maxX) / sliderSize;
+	 		sliderX = ((this.x-this.min) * maxX) / sliderSize;
     			
-			if (value < maxX/2) value = (maxX - value)*-1 + maxX/2;
-			else if (value > maxX/2) value -= maxX/2;
-			else value = 0;
+			if (sliderX < maxX/2) sliderX = (maxX - sliderX)*-1 + maxX/2;
+			else if (sliderX > maxX/2) sliderX -= maxX/2;
+			else sliderX = 0;
 	 	}
 	 	else{
-	 		value = ((this.y-this.min) * maxR) / sliderSize *-1;
+	 		sliderR = ((this.y-this.min) * maxR) / sliderSize *-1;
     			
-			if (value < maxR/2) value = (maxR - value)*-1 + maxR/2;
-			else if (value > maxR/2) value -= maxR/2;
-			else value = 0;
+			if (sliderR < maxR/2) sliderR = (maxR - sliderR)*-1 + maxR/2;
+			else if (sliderR > maxR/2) sliderR -= maxR/2;
+			else sliderR = 0;
 	 	}
-
-	 	if(this.tipo == "rtrain") sliderR = value;
-		else if(this.tipo == "xtrain") sliderX = value;
-		else if(this.tipo == "volume") sliderV = map(value, -10,10,0.001,1);
-
-
-			
 	}
 
 
@@ -631,10 +603,7 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 	}
 
 	this.reset();
-	if(this.isHorizontal){
-		//this.x = this.min + sliderSize/2 + sliderSize/6;
- 		this.setValue();
- 	}
+	this.setValue();
 
 	
 
@@ -671,11 +640,10 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     	strokeWeight(1);
 
     	if(this.isHorizontal){
-    		//line(this.min + this.w/2, this.y + this.h/2, this.min + this.w/2 + sliderSize, this.y + this.h/2);
     		line(this.min, this.y + this.h/2, this.min + this.w + sliderSize, this.y + this.h/2);
     	}
     	else{
-    		line(this.x + this.w/2, this.min + this.h/2, this.x + this.w/2, this.min + this.h/2 - sliderSize);	
+    		line(this.x + this.w/2, this.min - sliderSize, this.x + this.w/2, this.min + this.h);	
     	}
 
     	if(this.checkMouse()) fill(cOver);
@@ -696,15 +664,10 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 
     this.checkClick = function() {
     	if(this.checkMouse()){
-    		if(mouseButton == LEFT){
-	    		this.isBeingDragged = true;	
+    		 this.isBeingDragged = true;	
 
-	    		if (this.isHorizontal) this.grabPoint = mouseX - this.x;
-	    		else this.grabPoint = mouseY - this.y; 	
-    		}
-    		else {
-	    		this.reset();
-    		}
+    		 if (this.isHorizontal) this.grabPoint = mouseX - this.x;
+    		 else this.grabPoint = mouseY - this.y; 	
     	}	
     }
 
@@ -783,6 +746,7 @@ function Boton(_x, _y, _tipo) {
     		else if(this.tipo == "fullscreen"){
     			toggleFullscreen();
     		}
+    		
     	}	
     }
 
@@ -806,6 +770,20 @@ function gotFile(file) {
 	} else {
 		println('Not an image file!');
 	}	
+}
+
+function windowResized() {
+	print("MOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE");
+    resizeCanvas(windowWidth, windowHeight);
+    createMiniCanvases();
+	for (var i=0; i < sliders.length; i++) {
+		sliders[i].reset();    	
+	}
+	sliderX = 0;
+	sliderR = 0;
+	trainX = 0;
+	trainR = 0; 
+
 }
 
 
