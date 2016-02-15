@@ -701,10 +701,15 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 
     this.checkClick = function() {
     	if(this.checkMouse()){
-    		 this.isBeingDragged = true;	
+    		if(mouseButton == LEFT){
+	    		this.isBeingDragged = true;	
 
-    		 if (this.isHorizontal) this.grabPoint = mouseX - this.x;
-    		 else this.grabPoint = mouseY - this.y; 	
+	    		if (this.isHorizontal) this.grabPoint = mouseX - this.x;
+	    		else this.grabPoint = mouseY - this.y; 	
+    		}
+    		else {
+	    		this.reset();
+    		}
     	}	
     }
 
