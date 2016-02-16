@@ -793,8 +793,10 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 	 	}
 
 	 	if(this.tipo == "rtrain") sliderR = value;
-		else if(this.tipo == "xtrain") sliderX = value;
+		else if(this.tipo == "xtrain") sliderX = map(value, -10,10,10,-10);
 		else if(this.tipo == "volume") sliderV = map(value, -2.5,4.55,0.001,1);
+
+		println(value);
 	}
 
 
@@ -810,7 +812,7 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 	}
 
 	this.reset();
-	if(this.tipo == "xtrain") this.x += sliderSize/6; 
+	if(this.tipo == "xtrain") this.x -= sliderSize/6; 
 	this.setValue();
 
 	
@@ -1047,7 +1049,7 @@ function gotFileHack(file){
 }
 
 function windowResized() {	
-	createMiniCanvases();
+	//createMiniCanvases();
 	resizeCanvas(windowWidth, windowHeight);
 
 	textFont('Consolas');
