@@ -212,12 +212,12 @@ function draw() {
 
 	if (isDragging){
 
-		if(currentTool == "paint"){
+		if(currentTool == "paint" && mouseButton == LEFT){
 			pg.strokeWeight(3.5);
 			pg.noFill();
 			pg.stroke(cLines)
 		}
-		else if(currentTool == "erase"){
+		else {
 			pg.strokeWeight(50);
 			pg.noFill();
 			pg.stroke(cBg)
@@ -423,7 +423,7 @@ function draw() {
 	//help
 	if(helpShow){
     	var helpW = 390;
-		var helpH = 200;
+		var helpH = 215;
 		var helpX = windowWidth/2 - helpW/2;
     	var helpY = windowHeight/2 - helpH/2;
 
@@ -434,16 +434,16 @@ function draw() {
 		rect(helpX, helpY, helpW, helpH);
 
 		var txt1 = 
-		" ┌ - - - - - - - -  " + appName+" "+appVersion+"  - - - - - - - - ┐ "+"\n"+
-		//"And experiment trying to emulate the Unix systems\n"+		
+		" ┌ - - - - - - - -  " + appName+" "+appVersion+"  - - - - - - - - ┐ "+"\n"+		
 		" \n"+
 		"WUT:\n"+
 		"visual composer for N saw oscilators.\n"+
 		"kinda inspired by the mythic UPIC by Xenakis.\n"+			
 		" \n"+
 		"HOW:\n"+
-		"click 'n drag to paint different voices.\n"+
+		"left click 'n drag to paint different voices.\n"+
 		"drag bottom-left sliders to give it swing.\n"+	
+		"right click 'n drag to erase.\n"+
 		" \n"+
 		" └ - - - - - - -  " + "by jeremias babini" + "  - - - - - - - ┘ "
 		;
