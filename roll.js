@@ -473,7 +473,7 @@ function draw() {
 		}
 		else {
 			ISaw.play({
-			    volume  : sliderV * 0.9,
+			    volume  : sliderV * 0.8,
 			    wait    : 0,     // Time in seconds between calling play() and actually triggering the note.
 			    loop    : true, // This overrides the value for loop on the constructor, if it was set. 
 			    pitch   : oscilatorsFreq_saw[i],  // A4 is 440 hertz.
@@ -516,7 +516,7 @@ function draw() {
 		}
 		else {
 			ISquare.play({
-			    volume  : sliderV * 0.7,
+			    volume  : sliderV * 0.6,
 			    wait    : 0,     // Time in seconds between calling play() and actually triggering the note.
 			    loop    : true, // This overrides the value for loop on the constructor, if it was set. 
 			    pitch   : oscilatorsFreq_square[i] + 440,  // A4 is 440 hertz.
@@ -535,7 +535,7 @@ function draw() {
 		}
 		else {
 			ITriangle.play({
-			    volume  : sliderV * 0.8,
+			    volume  : sliderV * 0.7,
 			    wait    : 0,     // Time in seconds between calling play() and actually triggering the note.
 			    loop    : true, // This overrides the value for loop on the constructor, if it was set. 
 			    pitch   : oscilatorsFreq_triangle[i] + 440,  // A4 is 440 hertz.
@@ -593,8 +593,8 @@ function draw() {
 		" ┌ - - - - - - - -  " + appName+" "+appVersion+"  - - - - - - - - ┐ "+"\n"+		
 		" \n"+
 		"WUT:\n"+
-		"visual composer/performer for oscilators.\n"+
-		"kinda inspired by the mythic UPIC by Xenakis.\n"+
+		"visual composer/performer for basic oscilators.\n"+
+		"slightly inspired by the mythic UPIC by Xenakis.\n"+
 		"tested on Chrome.\n"+
 		" \n"+
 		"HOW:\n"+		
@@ -672,7 +672,7 @@ function isOnUI() {
 	if (mouseX < uiWidth) return true;
 	else if(mouseX < uiWidth + sliderSize + buttonSize && mouseY > windowHeight - buttonSize - margen) return true; //downslider
 	else if(mouseX > windowWidth - buttonSize - margen && mouseY < (buttonSize + margen)*4) return true; //right buttons
-	else if(mouseX > windowWidth - buttonSize - margen && mouseY > windowHeight - buttonSize*3 - margen*2) return true;
+	else if(mouseX > windowWidth - buttonSize - margen && mouseY > windowHeight - buttonSize*4 - margen*2) return true;
 	else return false;
 }
 
@@ -736,6 +736,8 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     this.max;
     this.grabPoint;
 
+    volumeExtra = 37;
+
     if(this.isHorizontal){
     	this.min = this.x; 
     	this.max = this.x + sliderSize;
@@ -743,6 +745,8 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     else{
     	this.min = this.y; 
     	this.max = this.y - sliderSize;
+
+    	
     }
 
     if(this.tipo == "rtrain") this.icon = btnImg_rtrain;
@@ -762,7 +766,7 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 	    	else if(__y > this.min) this.y += __y - this.min;
 
 	    	this.min = __y; 
-	    	this.max = __y - sliderSize;
+	    	this.max = __y - sliderSize - volumeExtra;
 
 
 	    	this.x = __x;
@@ -790,9 +794,7 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 
 	 	if(this.tipo == "rtrain") sliderR = value;
 		else if(this.tipo == "xtrain") sliderX = value;
-		else if(this.tipo == "volume") sliderV = map(value, -2.5,2.5,0.001,1);
-
-		
+		else if(this.tipo == "volume") sliderV = map(value, -2.5,4.55,0.001,1);
 	}
 
 
@@ -849,7 +851,9 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     		line(this.min, this.y + this.h/2, this.min + this.w + sliderSize, this.y + this.h/2);
     	}
     	else{
-    		line(this.x + this.w/2, this.min - sliderSize, this.x + this.w/2, this.min + this.h);	
+    		line(this.x + this.w/2, this.min - sliderSize, this.x + this.w/2, this.min + this.h);
+
+    		if (this.tipo == "volume") line(this.x + this.w/2, this.min - sliderSize - volumeExtra, this.x + this.w/2, this.min + this.h);
     	}
 
     	if(this.checkMouse()) fill(cOver);
