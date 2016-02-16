@@ -72,7 +72,7 @@ var sliderSize = 90;
 
 var collisionPoints = [];
 
-
+var pix;
 var currentTool = "paint";
 
 
@@ -106,10 +106,10 @@ function setup() {
 	c3 = color(255,85,255);
 	c4 = color(255,255,255);
 
-	cSaw = c2;
-	cSine = color(1,255,20);
-	cSquare = color(255,255,0);
-	cTriangle = color(20,255,0);
+	cSaw = color(85,255,255);
+	cSine = color(1,255,1);
+	cSquare = color(1,1,255);
+	cTriangle = color(255,1,1);
 
 	cBg = c1;
 	cLines = cSaw;
@@ -168,55 +168,22 @@ function setup() {
     textFont('Consolas');
 
     ISaw = new Wad({
-    	source : 'sawtooth',
-    	tuna   : {
-	        Compressor : {
-		        threshold: 0.5,    //-100 to 0
-			    makeupGain: 1,     //0 and up
-			    attack: 1,         //0 to 1000
-			    release: 0,        //0 to 3000
-			    ratio: 4,          //1 to 20
-			    knee: 5,           //0 to 40
-			    automakeup: true,  //true/false
-			    bypass: 0
-		    }
-	    }
+    	source : 'sawtooth'
     });
 
     ISine = new Wad({
-    	source : 'sine',
-    	tuna   : {
-	        Compressor : {
-		        threshold: 0.5,    //-100 to 0
-			    makeupGain: 1,     //0 and up
-			    attack: 1,         //0 to 1000
-			    release: 0,        //0 to 3000
-			    ratio: 4,          //1 to 20
-			    knee: 5,           //0 to 40
-			    automakeup: true,  //true/false
-			    bypass: 0
-		    }
-	    }
+    	source : 'sine'
     });
     ISquare = new Wad({
-    	source : 'square',
-    	tuna   : {
-	        Compressor : {
-		        threshold: 0.5,    //-100 to 0
-			    makeupGain: 1,     //0 and up
-			    attack: 1,         //0 to 1000
-			    release: 0,        //0 to 3000
-			    ratio: 4,          //1 to 20
-			    knee: 5,           //0 to 40
-			    automakeup: true,  //true/false
-			    bypass: 0
-		    }
-	    }
+    	source : 'square'
     });
 
     ITriangle = new Wad({
-    	source : 'triangle',
-    	tuna   : {
+    	source : 'triangle'    	
+    });
+
+    var mixerTrack = new Wad.Poly({
+	    tuna   : {
 	        Compressor : {
 		        threshold: 0.5,    //-100 to 0
 			    makeupGain: 1,     //0 and up
@@ -228,7 +195,8 @@ function setup() {
 			    bypass: 0
 		    }
 	    }
-    });
+	})
+	mixerTrack.add(ISaw).add(ISine).add(ISquare).add(ITriangle);
 
     
 
@@ -236,6 +204,8 @@ function setup() {
 }
 
 function draw() {  
+
+
 	background(cBg);
 	cursor(CROSS);
 
@@ -248,7 +218,18 @@ function draw() {
 
 	
 
-	//grid
+	//grid	
+
+	//blendMode(ADD);
+	image(pg, -windowWidth + trainX, 0);
+	image(pg, 0 + trainX, 0);
+	image(pg, windowWidth + trainX, 0);
+	//blendMode(NORMAL);
+
+	var listenerImg
+	if(WEBGL) listenerImg = get(windowWidth/2, 0, 4, windowHeight);
+	else listenerImg = get(windowWidth/2 - 2, 0, 4, windowHeight);
+
 	strokeWeight(0.2);
 	stroke(cGrid);
 	gridW = windowWidth/16;
@@ -267,12 +248,6 @@ function draw() {
 	line(-windowWidth+trainX,0,-windowWidth+trainX,windowHeight);
 	line(-1+trainX,0,-1+trainX,windowHeight);
 	line(windowWidth+1+trainX,0,windowWidth+1+trainX,windowHeight);
-
-	blendMode(ADD);
-	image(pg, -windowWidth + trainX, 0);
-	image(pg, 0 + trainX, 0);
-	image(pg, windowWidth + trainX, 0);
-	blendMode(NORMAL);
 
 	//---
 
@@ -413,9 +388,7 @@ function draw() {
 	
 
 	//----SOUND
-	var listenerImg
-	if(WEBGL) listenerImg = get(windowWidth/2, 0, 4, windowHeight);
-	else listenerImg = get(windowWidth/2 - 2, 0, 4, windowHeight);
+	
 	
 	var pix;
 	var safeWait = 0;
@@ -447,30 +420,33 @@ function draw() {
 	for (var i = windowHeight; i > 0; i--){
 		if(safeWait <= 0){
 			pix = listenerImg.get(2,i-1);
+			pixR = pix[0];
+			pixG = pix[1];
+			pixB = pix[2];
 
-			if(pix[1] == 255){
+			if(pixR == 255 || pixG == 255 || pixB == 255){
 				safeWait = 20; //safe				
 
 				var f = windowHeight - i;
 				oscFreq = ( 550 * f ) / windowHeight + 150;
 				oscFreq = map(f, 0, windowHeight, 20, 500);
 				
-				if(pix[0] == red(cSaw)){
+				if(checkColor(pixR, pixG, pixB, cSaw)){
 					polyNum_saw++;
 					oscilatorsFreq_saw[voiceNum_saw] = oscFreq;
 					voiceNum_saw++;	
 				}
-				else if (pix[0] == red(cSine)){
+				else if(checkColor(pixR, pixG, pixB, cSine)){
 					polyNum_sine++;
 					oscilatorsFreq_sine[voiceNum_sine] = oscFreq;
 					voiceNum_sine++;	
 				}
-				else if (pix[0] == red(cSquare)){
+				else if(checkColor(pixR, pixG, pixB, cSquare)){
 					polyNum_square++;
 					oscilatorsFreq_square[voiceNum_square] = oscFreq;
 					voiceNum_square++;	
 				}
-				else if (pix[0] == red(cTriangle)){
+				else if(checkColor(pixR, pixG, pixB, cTriangle)){
 					polyNum_triangle++;
 					oscilatorsFreq_triangle[voiceNum_triangle] = oscFreq;
 					voiceNum_triangle++;	
@@ -497,7 +473,7 @@ function draw() {
 		}
 		else {
 			ISaw.play({
-			    volume  : sliderV,
+			    volume  : sliderV * 0.9,
 			    wait    : 0,     // Time in seconds between calling play() and actually triggering the note.
 			    loop    : true, // This overrides the value for loop on the constructor, if it was set. 
 			    pitch   : oscilatorsFreq_saw[i],  // A4 is 440 hertz.
@@ -540,7 +516,7 @@ function draw() {
 		}
 		else {
 			ISquare.play({
-			    volume  : sliderV,
+			    volume  : sliderV * 0.7,
 			    wait    : 0,     // Time in seconds between calling play() and actually triggering the note.
 			    loop    : true, // This overrides the value for loop on the constructor, if it was set. 
 			    pitch   : oscilatorsFreq_square[i] + 440,  // A4 is 440 hertz.
@@ -559,7 +535,7 @@ function draw() {
 		}
 		else {
 			ITriangle.play({
-			    volume  : sliderV,
+			    volume  : sliderV * 0.8,
 			    wait    : 0,     // Time in seconds between calling play() and actually triggering the note.
 			    loop    : true, // This overrides the value for loop on the constructor, if it was set. 
 			    pitch   : oscilatorsFreq_triangle[i] + 440,  // A4 is 440 hertz.
@@ -617,7 +593,7 @@ function draw() {
 		" ┌ - - - - - - - -  " + appName+" "+appVersion+"  - - - - - - - - ┐ "+"\n"+		
 		" \n"+
 		"WUT:\n"+
-		"visual composer/performer for saw oscilators.\n"+
+		"visual composer/performer for oscilators.\n"+
 		"kinda inspired by the mythic UPIC by Xenakis.\n"+
 		"tested on Chrome.\n"+
 		" \n"+
@@ -656,6 +632,21 @@ function draw() {
     	sliders[i].display(); 
     }
 	
+}
+
+function checkColor(_r, _g, _b, _color){
+	_red = false;
+	_green = false;
+	_blue = false;
+
+	changui = 10;
+
+	if(abs(_r - red(_color)) < changui) _red = true;
+	if(abs(_g - green(_color)) < changui) _green = true;
+	if(abs(_b - blue(_color)) < changui) _blue = true;	
+
+	if(_red && _green && _blue) return true;
+	else return false;
 }
 
 function toggleFullscreen() {
