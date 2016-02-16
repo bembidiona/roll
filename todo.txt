@@ -1,5 +1,8 @@
-BUG: save score graba todo el canvas
-BGG: Save canvas, al cambiar el size de la ventana, resetea el canvas
-- probar si se puede sacar p5.sound
+- invertir el slider de X
+- probar grabar un wav ahora que hay un polywad
+
+
+Issue: Save canvas, al cambiar el size de la ventana, resetea el canvas
+
 
 
