@@ -505,6 +505,14 @@ function isOnUI() {
 
 function mousePressed() {
 	if(helpShowFirst) {		
+		var helpW = 390;
+		var helpH = 215;
+		if (mouseX > windowWidth/2 - helpW/2 && mouseX < windowWidth/2 + helpW/2){
+			if (mouseY > windowHeight/2 - helpH/2 && mouseY < windowHeight/2 + helpH/2){
+				return;
+			}
+		}
+		
 		helpShowFirst = false;
 		helpShow = false;
 	}
