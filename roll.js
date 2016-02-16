@@ -1,5 +1,5 @@
 var WEBGL = false;
-var polyNum = 4; 
+
 
 var appName = "r o l l "
 var appVersion = "v0.2";
@@ -28,10 +28,18 @@ var cPlayer;
 var cGrid;
 var cBorder;
 var cOver;
+var cSaw, cSine, cSquare, cTriangle;
 
 
-var oscilators = [];
-var oscilatorsFreq = [];
+
+var oscilatorsFreq_saw = [];
+var polyNum_saw; 
+var oscilatorsFreq_sine = [];
+var polyNum_sine;
+var oscilatorsFreq_square = [];
+var polyNum_square; 
+var oscilatorsFreq_triangle = [];
+var polyNum_triangle;
 
 
 var uiWidth = 80;
@@ -45,7 +53,11 @@ var sliders = [];
 var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
 if(WEBGL) var buttonsTypes = ["paint", "erase", "clear", "save", "help", "stop"];
-else var buttonsTypes = ["clear", "save", "help", "stop"];
+else var buttonsTypes = ["saw", "sine", "square", "triangle", "clear", "save", "help", "stop"];
+var btnImg_saw;
+var btnImg_sine;
+var btnImg_square;
+var btnImg_triangle;
 var btnImg_paint;
 var btnImg_erase;
 var btnImg_clear;
@@ -94,13 +106,19 @@ function setup() {
 	c3 = color(255,85,255);
 	c4 = color(255,255,255);
 
+	cSaw = c2;
+	cSine = color(1,255,20);
+	cSquare = color(255,255,0);
+	cTriangle = color(20,255,0);
+
 	cBg = c1;
-	cLines = c2;
+	cLines = cSaw;
 	cPlayer = c3;
 	cGrid = c3;
 	cBorder = c3;
 	cOver = c3;
 	cButtons = c4;
+
 
 	colorKey = green(cLines);
 
@@ -127,12 +145,17 @@ function setup() {
 	btnImg_volume = loadImage("img/volume-medium.png");
 	btnImg_fullscreen = loadImage("img/fullscreen.png");
 
+	btnImg_saw = loadImage("img/saw.png");
+	btnImg_sine = loadImage("img/sine.png");
+	btnImg_square = loadImage("img/square.png");	
+	btnImg_triangle = loadImage("img/triangle.png");
+
   
 
   	
 
     for (var i=0; i < buttonsTypes.length; i++) {
-    	if(i <= 2) buttons.push(new Boton(margen, i * (buttonSize + margen) + margen, buttonsTypes[i]));
+    	if(i <= 6) buttons.push(new Boton(margen, i * (buttonSize + margen) + margen, buttonsTypes[i]));
     	else buttons.push(new Boton(margen, windowHeight - margen - buttonSize, buttonsTypes[i]));  	
     }
     buttons.push(new Boton(windowWidth - buttonSize - margen, margen, "fullscreen"));
@@ -146,6 +169,53 @@ function setup() {
 
     ISaw = new Wad({
     	source : 'sawtooth',
+    	tuna   : {
+	        Compressor : {
+		        threshold: 0.5,    //-100 to 0
+			    makeupGain: 1,     //0 and up
+			    attack: 1,         //0 to 1000
+			    release: 0,        //0 to 3000
+			    ratio: 4,          //1 to 20
+			    knee: 5,           //0 to 40
+			    automakeup: true,  //true/false
+			    bypass: 0
+		    }
+	    }
+    });
+
+    ISine = new Wad({
+    	source : 'sine',
+    	tuna   : {
+	        Compressor : {
+		        threshold: 0.5,    //-100 to 0
+			    makeupGain: 1,     //0 and up
+			    attack: 1,         //0 to 1000
+			    release: 0,        //0 to 3000
+			    ratio: 4,          //1 to 20
+			    knee: 5,           //0 to 40
+			    automakeup: true,  //true/false
+			    bypass: 0
+		    }
+	    }
+    });
+    ISquare = new Wad({
+    	source : 'square',
+    	tuna   : {
+	        Compressor : {
+		        threshold: 0.5,    //-100 to 0
+			    makeupGain: 1,     //0 and up
+			    attack: 1,         //0 to 1000
+			    release: 0,        //0 to 3000
+			    ratio: 4,          //1 to 20
+			    knee: 5,           //0 to 40
+			    automakeup: true,  //true/false
+			    bypass: 0
+		    }
+	    }
+    });
+
+    ITriangle = new Wad({
+    	source : 'triangle',
     	tuna   : {
 	        Compressor : {
 		        threshold: 0.5,    //-100 to 0
@@ -349,26 +419,62 @@ function draw() {
 	
 	var pix;
 	var safeWait = 0;
-	var voiceNum = 0;
-	for (var i=0; i<polyNum; i++) {
-    	oscilatorsFreq[i] = 0;
+
+	var voiceNum_saw = 0;
+	for (var i=0; i<polyNum_saw; i++) {
+    	oscilatorsFreq_saw[i] = 0;
     }
-    polyNum = 0;
+    polyNum_saw = 0;
+
+    var voiceNum_sine = 0;
+	for (var i=0; i<polyNum_sine; i++) {
+    	oscilatorsFreq_sine[i] = 0;
+    }
+    polyNum_sine = 0;
+
+    var voiceNum_square = 0;
+	for (var i=0; i<polyNum_square; i++) {
+    	oscilatorsFreq_square[i] = 0;
+    }
+    polyNum_square = 0;
+
+    var voiceNum_triangle = 0;
+	for (var i=0; i<polyNum_triangle; i++) {
+    	oscilatorsFreq_triangle[i] = 0;
+    }
+    polyNum_triangle = 0;
 
 	for (var i = windowHeight; i > 0; i--){
 		if(safeWait <= 0){
 			pix = listenerImg.get(2,i-1);
 
-			if(pix[1] == colorKey){
-				safeWait = 20; //safe
-				polyNum++;
+			if(pix[1] == 255){
+				safeWait = 20; //safe				
 
 				var f = windowHeight - i;
 				oscFreq = ( 550 * f ) / windowHeight + 150;
 				oscFreq = map(f, 0, windowHeight, 20, 500);
 				
-				oscilatorsFreq[voiceNum] = oscFreq;
-				voiceNum++;
+				if(pix[0] == red(cSaw)){
+					polyNum_saw++;
+					oscilatorsFreq_saw[voiceNum_saw] = oscFreq;
+					voiceNum_saw++;	
+				}
+				else if (pix[0] == red(cSine)){
+					polyNum_sine++;
+					oscilatorsFreq_sine[voiceNum_sine] = oscFreq;
+					voiceNum_sine++;	
+				}
+				else if (pix[0] == red(cSquare)){
+					polyNum_square++;
+					oscilatorsFreq_square[voiceNum_square] = oscFreq;
+					voiceNum_square++;	
+				}
+				else if (pix[0] == red(cTriangle)){
+					polyNum_triangle++;
+					oscilatorsFreq_triangle[voiceNum_triangle] = oscFreq;
+					voiceNum_triangle++;	
+				}
 
 				var lol = 14;
 				fill(cButtons);
@@ -381,21 +487,20 @@ function draw() {
 					lol = random(40) + 30;
 					line(windowWidth/2, i, windowWidth/2 + random(lol) - lol/2, i + random(lol) - lol/2);
 				};
-			} 
+			}
 		}
-		else safeWait--;
-		
+		else safeWait--;		
 	}	
  	
-	for (var i = 0; i < polyNum; i++){
-		if(oscilatorsFreq[i] == 0){
+	for (var i = 0; i < polyNum_saw; i++){
+		if(oscilatorsFreq_saw[i] == 0){
 		}
 		else {
 			ISaw.play({
 			    volume  : sliderV,
 			    wait    : 0,     // Time in seconds between calling play() and actually triggering the note.
 			    loop    : true, // This overrides the value for loop on the constructor, if it was set. 
-			    pitch   : oscilatorsFreq[i],  // A4 is 440 hertz.
+			    pitch   : oscilatorsFreq_saw[i],  // A4 is 440 hertz.
 			    //label   : 'A',   // A label that identifies this note.
 		        env     : {      // This is the ADSR envelope.
 			        attack  : 0.1,  // Time in seconds from onset to peak volume.  Common values for oscillators may range from 0.05 to 0.3.
@@ -410,16 +515,74 @@ function draw() {
 			})		
 		}
 	}
+
+	for (var i = 0; i < polyNum_sine; i++){
+		if(oscilatorsFreq_sine[i] == 0){
+		}
+		else {
+			ISine.play({
+			    volume  : sliderV,
+			    wait    : 0,     // Time in seconds between calling play() and actually triggering the note.
+			    loop    : true, // This overrides the value for loop on the constructor, if it was set. 
+			    pitch   : oscilatorsFreq_sine[i],  // A4 is 440 hertz.
+		        env     : {      // This is the ADSR envelope.
+			        attack  : 0.1,  // Time in seconds from onset to peak volume.  Common values for oscillators may range from 0.05 to 0.3.
+			        decay   : 0.0,  // Time in seconds from peak volume to sustain volume.
+			        sustain : 1.0,  // Sustain volume level. This is a percent of the peak volume, so sensible values are between 0 and 1.
+			        hold    : 0.1, // Time in seconds to maintain the sustain volume level. If this is not set to a lower value, oscillators must be manually stopped by calling their stop() method.
+			        release : 0.4     // Time in seconds from the end of the hold period to zero volume, or from calling stop() to zero volume.
+			    },
+			})		
+		}
+	}
+	for (var i = 0; i < polyNum_square; i++){
+		if(oscilatorsFreq_square[i] == 0){
+		}
+		else {
+			ISquare.play({
+			    volume  : sliderV,
+			    wait    : 0,     // Time in seconds between calling play() and actually triggering the note.
+			    loop    : true, // This overrides the value for loop on the constructor, if it was set. 
+			    pitch   : oscilatorsFreq_square[i] + 440,  // A4 is 440 hertz.
+		        env     : {      // This is the ADSR envelope.
+			        attack  : 0.1,  // Time in seconds from onset to peak volume.  Common values for oscillators may range from 0.05 to 0.3.
+			        decay   : 0.0,  // Time in seconds from peak volume to sustain volume.
+			        sustain : 1.0,  // Sustain volume level. This is a percent of the peak volume, so sensible values are between 0 and 1.
+			        hold    : 0.1, // Time in seconds to maintain the sustain volume level. If this is not set to a lower value, oscillators must be manually stopped by calling their stop() method.
+			        release : 0.4     // Time in seconds from the end of the hold period to zero volume, or from calling stop() to zero volume.
+			    },
+			})		
+		}
+	}
+	for (var i = 0; i < polyNum_triangle; i++){
+		if(oscilatorsFreq_triangle[i] == 0){
+		}
+		else {
+			ITriangle.play({
+			    volume  : sliderV,
+			    wait    : 0,     // Time in seconds between calling play() and actually triggering the note.
+			    loop    : true, // This overrides the value for loop on the constructor, if it was set. 
+			    pitch   : oscilatorsFreq_triangle[i] + 440,  // A4 is 440 hertz.
+		        env     : {      // This is the ADSR envelope.
+			        attack  : 0.1,  // Time in seconds from onset to peak volume.  Common values for oscillators may range from 0.05 to 0.3.
+			        decay   : 0.0,  // Time in seconds from peak volume to sustain volume.
+			        sustain : 1.0,  // Sustain volume level. This is a percent of the peak volume, so sensible values are between 0 and 1.
+			        hold    : 0.1, // Time in seconds to maintain the sustain volume level. If this is not set to a lower value, oscillators must be manually stopped by calling their stop() method.
+			        release : 0.4     // Time in seconds from the end of the hold period to zero volume, or from calling stop() to zero volume.
+			    },
+			})		
+		}
+	}
 	//---------------------
 
 	
 
     var glitch = get(0,0,windowWidth,windowHeight);
-    if (voiceNum == 0){
+    if (voiceNum_saw == 0){
     	
     }
     else{
-    	glitchOffset = voiceNum * 0.9 + 0.5;
+    	glitchOffset = voiceNum_saw * 0.9 + 0.5;
 
 	    blendMode(EXCLUSION);
 	    image(glitch, random(glitchOffset*2) - glitchOffset,random(glitchOffset*2) - glitchOffset);
@@ -478,9 +641,10 @@ function draw() {
     ///------------------
 	
 	for (var i=0; i < buttons.length; i++) {
-		if(i <= 2) buttons[i].setPosition(margen, i * (buttonSize + margen) + margen);
-		else if (i == 3) buttons[i].setPosition(margen, windowHeight - margen - buttonSize); 
-		else if (i == 4) buttons[i].setPosition(windowWidth - buttonSize - margen, margen);
+		if(i <= 3) buttons[i].setPosition(margen, i * (buttonSize + margen) + margen);
+		else if(i <= 6) buttons[i].setPosition(windowWidth - buttonSize - margen, (i - 3)* (buttonSize + margen) + margen);
+		else if (i == 7) buttons[i].setPosition(margen, windowHeight - margen - buttonSize); 
+		else if (i == 8) buttons[i].setPosition(windowWidth - buttonSize - margen, margen);
 
     	buttons[i].display();    	    	 	
     }
@@ -515,8 +679,8 @@ function createMiniCanvases() {
 
 function isOnUI() {
 	if (mouseX < uiWidth) return true;
-	else if(mouseX < uiWidth + sliderSize + buttonSize && mouseY > windowHeight - buttonSize - margen) return true;
-	else if(mouseX > windowWidth - buttonSize - margen && mouseY < buttonSize + margen) return true;
+	else if(mouseX < uiWidth + sliderSize + buttonSize && mouseY > windowHeight - buttonSize - margen) return true; //downslider
+	else if(mouseX > windowWidth - buttonSize - margen && mouseY < (buttonSize + margen)*4) return true; //right buttons
 	else if(mouseX > windowWidth - buttonSize - margen && mouseY > windowHeight - buttonSize*3 - margen*2) return true;
 	else return false;
 }
@@ -756,6 +920,11 @@ function Boton(_x, _y, _tipo) {
 	else if(this.tipo == "save") this.icon = btnImg_save;
 	else if(this.tipo == "help") this.icon = btnImg_help;
 	else if(this.tipo == "fullscreen") this.icon = btnImg_fullscreen;
+	else if(this.tipo == "saw") this.icon = btnImg_saw;
+	else if(this.tipo == "sine") this.icon = btnImg_sine;
+	else if(this.tipo == "square") this.icon = btnImg_square;
+	else if(this.tipo == "triangle") this.icon = btnImg_triangle;
+	else this.icon = btnImg_fullscreen;
 	     
 	this.setPosition = function(__x , __y) {
 		this.x = __x;
@@ -766,7 +935,13 @@ function Boton(_x, _y, _tipo) {
     	stroke(cButtons);
     	strokeWeight(1);
     	
-    	if(this.checkMouse()) fill(cOver);
+    	if(this.checkMouse()){
+    		if(this.tipo == "saw") fill(cSaw);
+		    else if(this.tipo == "sine") fill(cSine);
+		    else if(this.tipo == "square") fill(cSquare);
+			else if(this.tipo == "triangle") fill(cTriangle);
+		    else fill(cOver);	
+    	} 
     	else noFill();
 
     	rect(this.x, this.y, this.w, this.h);
@@ -779,12 +954,18 @@ function Boton(_x, _y, _tipo) {
 	    	fill(cGrid);
 	    	fix = 3;
 	    	if(this.tipo == "paint") text("paint voices", this.x + buttonSize + margen, this.y + buttonSize/2 + fix);
-		    else if(this.tipo == "erase") text("erase tool", this.x + buttonSize + margen, this.y + buttonSize/2 +fix);
-		    else if(this.tipo == "clear") text("new canvas", this.x + buttonSize + margen, this.y + buttonSize/2+fix);
+		    else if(this.tipo == "erase") text("erase tool", this.x + buttonSize + margen, this.y + buttonSize/2 +fix);		    
 			else if(this.tipo == "stop") ;//text("paint", this.x + buttonSize + margen, this.y + buttonSize/2);
-			else if(this.tipo == "save") text("\n save canvas \n [drop .png to load]", this.x + buttonSize + 4, this.y + buttonSize/2 - 21);
-			else if(this.tipo == "help") text("help/about", this.x + buttonSize + margen, this.y + buttonSize/2+fix);
-			else if(this.tipo == "fullscreen") {textAlign(RIGHT, CENTER);; text("go fullscreen", this.x, this.y + buttonSize/2+fix);}
+			else if(this.tipo == "saw") text("saw", this.x + buttonSize + margen, this.y + buttonSize/2 + fix);
+			else if(this.tipo == "sine") text("sine", this.x + buttonSize + margen, this.y + buttonSize/2 + fix);
+			else if(this.tipo == "square") text("square", this.x + buttonSize + margen, this.y + buttonSize/2 + fix);
+			else if(this.tipo == "triangle") text("triangle", this.x + buttonSize + margen, this.y + buttonSize/2 + fix);
+			
+			textAlign(RIGHT, CENTER);
+			if(this.tipo == "clear") text("new canvas", this.x, this.y + buttonSize/2+fix);
+			else if(this.tipo == "save") text("\n save canvas\n [drop .png to load]", this.x, this.y + buttonSize/2 - 21);
+			else if(this.tipo == "help") text("help/about", this.x, this.y + buttonSize/2+fix);
+			else if(this.tipo == "fullscreen") text("go fullscreen", this.x, this.y + buttonSize/2+fix);
     	}    	
     }
 
@@ -831,6 +1012,10 @@ function Boton(_x, _y, _tipo) {
     		else if(this.tipo == "fullscreen"){
     			toggleFullscreen();
     		}
+    		else if(this.tipo == "saw") cLines = cSaw;
+		    else if(this.tipo == "sine") cLines = cSine;
+		    else if(this.tipo == "square") cLines = cSquare;
+			else if(this.tipo == "triangle") cLines = cTriangle;
     		
     	}	
     }
@@ -881,7 +1066,20 @@ function windowResized() {
 	trainR = 0; 
 }
 
-
+function keyPressed() {
+  if (keyCode === LEFT_ARROW) {
+    cLines = cSaw;
+  }
+  else if (keyCode === RIGHT_ARROW) {
+    cLines = cSine;
+  }
+  else if (keyCode === UP_ARROW) {
+    cLines = cSquare;
+  }
+  else if (keyCode === DOWN_ARROW) {
+    cLines = cTriangle;
+  }
+}
 
 
 
