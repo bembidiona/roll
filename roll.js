@@ -218,6 +218,12 @@ function draw() {
 			pg.stroke(cLines)
 		}
 		else {
+			ellipseMode(CENTER);
+			stroke(250);
+			strokeWeight(1);
+			noFill();
+			ellipse(mouseX, mouseY, 50, 50);
+
 			pg.strokeWeight(50);
 			pg.noFill();
 			pg.stroke(cBg)
