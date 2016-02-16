@@ -176,6 +176,8 @@ function draw() {
 	rotate(trainR);
 	translate(-windowWidth/2, -windowHeight/2);
 
+	
+
 	//grid
 	strokeWeight(0.2);
 	stroke(cGrid);
@@ -195,11 +197,14 @@ function draw() {
 	line(-windowWidth+trainX,0,-windowWidth+trainX,windowHeight);
 	line(-1+trainX,0,-1+trainX,windowHeight);
 	line(windowWidth+1+trainX,0,windowWidth+1+trainX,windowHeight);
-	//---
 
+	blendMode(ADD);
 	image(pg, -windowWidth + trainX, 0);
 	image(pg, 0 + trainX, 0);
 	image(pg, windowWidth + trainX, 0);
+	blendMode(NORMAL);
+
+	//---
 
 	pop();
 
