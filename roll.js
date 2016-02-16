@@ -45,7 +45,7 @@ var sliders = [];
 var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
 if(WEBGL) var buttonsTypes = ["paint", "erase", "clear", "save", "help", "stop"];
-else var buttonsTypes = ["paint", "erase", "clear", "save", "help", "stop"];
+else var buttonsTypes = ["clear", "save", "help", "stop"];
 var btnImg_paint;
 var btnImg_erase;
 var btnImg_clear;
@@ -119,7 +119,7 @@ function setup() {
 	btnImg_erase = loadImage("img/eraser.png");
 	btnImg_clear = loadImage("img/new.png");
 	btnImg_stop = loadImage("img/pause.png");
-	btnImg_save = loadImage("img/floppy.png");	
+	btnImg_save = loadImage("img/download.png");	
 	btnImg_help = loadImage("img/helpy.png");
 
 	btnImg_rtrain = loadImage("img/cached.png");
@@ -132,7 +132,7 @@ function setup() {
   	
 
     for (var i=0; i < buttonsTypes.length; i++) {
-    	if(i <= 4) buttons.push(new Boton(margen, i * (buttonSize + margen) + margen, buttonsTypes[i]));
+    	if(i <= 2) buttons.push(new Boton(margen, i * (buttonSize + margen) + margen, buttonsTypes[i]));
     	else buttons.push(new Boton(margen, windowHeight - margen - buttonSize, buttonsTypes[i]));  	
     }
     buttons.push(new Boton(windowWidth - buttonSize - margen, margen, "fullscreen"));
@@ -218,6 +218,12 @@ function draw() {
 	if (isDragging){
 
 		if(currentTool == "paint" && mouseButton == LEFT){
+			ellipseMode(CENTER);
+			stroke(250);
+			strokeWeight(1);
+			noFill();
+			ellipse(mouseX, mouseY, 10, 10);
+
 			pg.strokeWeight(3.5);
 			pg.noFill();
 			pg.stroke(cLines)
@@ -434,7 +440,7 @@ function draw() {
 	//help
 	if(helpShow){
     	var helpW = 390;
-		var helpH = 215;
+		var helpH = 228;
 		var helpX = windowWidth/2 - helpW/2;
     	var helpY = windowHeight/2 - helpH/2;
 
@@ -449,20 +455,21 @@ function draw() {
 		" \n"+
 		"WUT:\n"+
 		"visual composer for N saw oscilators.\n"+
-		"kinda inspired by the mythic UPIC by Xenakis.\n"+			
+		"kinda inspired by the mythic UPIC by Xenakis.\n"+
+		"tested on Chrome.\n"+
 		" \n"+
-		"HOW:\n"+
+		"HOW:\n"+		
 		"left click 'n drag to paint different voices.\n"+
 		"drag bottom-left sliders to give it swing.\n"+	
-		"right click 'n drag to erase.\n"+
-		" \n"+
+		"right click 'n drag to erase.\n"+				
+		" \n"+		
 		" └ - - - - - - -  " + "by jeremias babini" + "  - - - - - - - ┘ "
 		;
 		fill(cButtons);
 		noStroke();
 		text(txt1, helpX + helpW/2 +3, helpY + margen + 2, helpW - margen*2, helpX - margen*2);	
 
-		link.position(helpX + helpW/2 - 40, helpY + helpH - 34);
+		link.position(helpX + helpW/2 - 40, helpY + helpH - 32);
 		link.show();		
     }
     else {
@@ -471,9 +478,9 @@ function draw() {
     ///------------------
 	
 	for (var i=0; i < buttons.length; i++) {
-		if(i <= 4) buttons[i].setPosition(margen, i * (buttonSize + margen) + margen);
-		else if (i == 5) buttons[i].setPosition(margen, windowHeight - margen - buttonSize); 
-		else if (i == 6) buttons[i].setPosition(windowWidth - buttonSize - margen, margen);
+		if(i <= 2) buttons[i].setPosition(margen, i * (buttonSize + margen) + margen);
+		else if (i == 3) buttons[i].setPosition(margen, windowHeight - margen - buttonSize); 
+		else if (i == 4) buttons[i].setPosition(windowWidth - buttonSize - margen, margen);
 
     	buttons[i].display();    	    	 	
     }
@@ -517,7 +524,7 @@ function isOnUI() {
 function mousePressed() {
 	if(helpShowFirst) {		
 		var helpW = 390;
-		var helpH = 215;
+		var helpH = 225;
 		if (mouseX > windowWidth/2 - helpW/2 && mouseX < windowWidth/2 + helpW/2){
 			if (mouseY > windowHeight/2 - helpH/2 && mouseY < windowHeight/2 + helpH/2){
 				return;
