@@ -2,7 +2,7 @@ var WEBGL = false;
 var polyNum = 4; 
 
 var appName = "r o l l "
-var appVersion = "v0.1";
+var appVersion = "v0.2";
 
 var trainX = 0;
 var trainR = 0;
@@ -454,7 +454,7 @@ function draw() {
 		" ┌ - - - - - - - -  " + appName+" "+appVersion+"  - - - - - - - - ┐ "+"\n"+		
 		" \n"+
 		"WUT:\n"+
-		"visual composer for N saw oscilators.\n"+
+		"visual composer/performer for saw oscilators.\n"+
 		"kinda inspired by the mythic UPIC by Xenakis.\n"+
 		"tested on Chrome.\n"+
 		" \n"+
@@ -710,7 +710,7 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
     		noStroke();
 	    	fill(cGrid);
 	    	fix = 3;
-	    	if(this.tipo == "rtrain") text("\n set rotation \n and traslation \n of the canvas", buttonSize + margen + 12, windowHeight - 120);
+	    	if(this.tipo == "rtrain") text("\n set rotation \n and traslation \n of the canvas", buttonSize + margen + 15, windowHeight - 120);
 	    	//if(this.tipo == "rtrain") text("set rotation", this.x + buttonSize + margen, this.y + buttonSize/2 + fix);	    
 	    	//else if(this.tipo == "xtrain") text("set translation", this.x + buttonSize + margen, this.y + buttonSize - 6);	    
 			if(this.tipo == "volume") {textAlign(RIGHT, CENTER);; text("set volume", this.x, this.y + buttonSize/2 + fix);}
