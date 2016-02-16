@@ -396,13 +396,13 @@ function draw() {
 			    wait    : 0,     // Time in seconds between calling play() and actually triggering the note.
 			    loop    : true, // This overrides the value for loop on the constructor, if it was set. 
 			    pitch   : oscilatorsFreq[i],  // A4 is 440 hertz.
-			    label   : 'A',   // A label that identifies this note.
+			    //label   : 'A',   // A label that identifies this note.
 		        env     : {      // This is the ADSR envelope.
 			        attack  : 0.1,  // Time in seconds from onset to peak volume.  Common values for oscillators may range from 0.05 to 0.3.
 			        decay   : 0.0,  // Time in seconds from peak volume to sustain volume.
 			        sustain : 1.0,  // Sustain volume level. This is a percent of the peak volume, so sensible values are between 0 and 1.
 			        hold    : 0.1, // Time in seconds to maintain the sustain volume level. If this is not set to a lower value, oscillators must be manually stopped by calling their stop() method.
-			        release : 0.2     // Time in seconds from the end of the hold period to zero volume, or from calling stop() to zero volume.
+			        release : 0.4     // Time in seconds from the end of the hold period to zero volume, or from calling stop() to zero volume.
 			    },
 			    //panning : [1, -1, 10],
 			    //filter  : {frequency : 900}
