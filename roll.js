@@ -97,6 +97,8 @@ window.addEventListener("contextmenu", function(e) { e.preventDefault(); })
 
 var link;
 
+var mixerTrack;
+
 function setup() {  
 
 	link = createA("http://www.jeremiasbabini.com","jeremias babini", "_blank");
@@ -182,7 +184,7 @@ function setup() {
     	source : 'triangle'    	
     });
 
-    var mixerTrack = new Wad.Poly({
+    mixerTrack = new Wad.Poly({
 	    tuna   : {
 	        Compressor : {
 		        threshold: 0.5,    //-100 to 0
@@ -194,6 +196,9 @@ function setup() {
 			    automakeup: true,  //true/false
 			    bypass: 0
 		    }
+	    },
+		    recConfig : { // The Recorder configuration object. The only required property is 'workerPath'.
+	        workerPath : '/lib/Recorderjs/recorderWorker.js' // The path to the Recorder.js web worker script.
 	    }
 	})
 	mixerTrack.add(ISaw).add(ISine).add(ISquare).add(ITriangle);
@@ -325,7 +330,7 @@ function draw() {
 
 
 
-        pg.point(nx, ny);
+        //pg.point(nx, ny);
 
 
 		
@@ -1065,13 +1070,19 @@ function windowResized() {
 
 function keyPressed() {
   if (keyCode === LEFT_ARROW) {
-    cLines = cSaw;
+    mixerTrack.rec.record();
+    print("record");
   }
   else if (keyCode === RIGHT_ARROW) {
-    cLines = cSine;
+    mixerTrack.rec.stop();
+    print("stop");
   }
   else if (keyCode === UP_ARROW) {
-    cLines = cSquare;
+    mixerTrack.rec.exportWAV(function(e){
+	    mixerTrack.rec.clear();
+	    Recorder.forceDownload(e, "filename.wav");
+	});
+    print("save");
   }
   else if (keyCode === DOWN_ARROW) {
     cLines = cTriangle;
