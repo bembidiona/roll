@@ -1071,18 +1071,46 @@ function windowResized() {
 function keyPressed() {
   if (keyCode === LEFT_ARROW) {
     mixerTrack.rec.record();
-    print("record");
+    print("record new");
   }
   else if (keyCode === RIGHT_ARROW) {
     mixerTrack.rec.stop();
-    print("stop");
+    print("stop new");
   }
   else if (keyCode === UP_ARROW) {
-    mixerTrack.rec.exportWAV(function(e){
-	    mixerTrack.rec.clear();
-	    Recorder.forceDownload(e, "filename.wav");
+  	var url;
+  	mixerTrack.rec.exportWAV(function(blob){
+  		print("IN"); 
+    	mixerTrack.rec.clear();
+	    Recorder.forceDownload(blob, "filename.wav");
+	    console.log(blob);
+
+	    url = (window.URL || window.webkitURL).createObjectURL(blob);
+	    
+	    /*var link = window.document.createElement('a');
+	    link.href = url;
+	    link.download = 'output.wav';
+	    //link.onclick = destroyClickedElement;
+	    link.style.display = 'none';
+	    document.body.appendChild(link);
+	    link.click();  
+
+	    window.open(url,'_blank');*/
 	});
-    print("save");
+    print("save new");    
+
+    /*var url = (window.URL || window.webkitURL).createObjectURL(this.blob);
+    print("url:");
+    print(url);
+    var link = window.document.createElement('a');
+    link.href = url;
+    link.download = 'output.wav';
+    //link.onclick = destroyClickedElement;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();  */
+
+   
   }
   else if (keyCode === DOWN_ARROW) {
     cLines = cTriangle;
