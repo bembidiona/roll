@@ -49,7 +49,7 @@ var sliders = [];
 
 var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
-var buttonsTypes = ["saw", "sine", "square", "triangle", "clear", "save", "help", "stop"];
+var buttonsTypes = ["saw", "sine", "square", "triangle", "clear", "save", "record", "help", "stop"];
 var btnImg_saw;
 var btnImg_sine;
 var btnImg_square;
@@ -121,7 +121,7 @@ function setup() {
 
 	colorKey = green(cLines);
 
-	c = createCanvas(windowWidth, windowHeight, 'WEBGL');	
+	c = createCanvas(windowWidth, windowHeight, false);	
 	c.drop(gotFileHack); 
 
 	windowWidth = windowWidth;
@@ -796,9 +796,7 @@ function Slider(_x, _y, _isHorizontal, _tipo) {
 
 	 	if(this.tipo == "rtrain") sliderR = value;
 		else if(this.tipo == "xtrain") sliderX = map(value, -10,10,10,-10);
-		else if(this.tipo == "volume") sliderV = map(value, -2.5,4.55,0.001,1);
-
-		println(value);
+		else if(this.tipo == "volume") sliderV = map(value, -2.5,4.55,0.001,1);		
 	}
 
 
@@ -1094,46 +1092,18 @@ function windowResized() {
 function keyPressed() {
   /*if (keyCode === LEFT_ARROW) {
     mixerTrack.rec.record();
-    print("record new");
+    print("record");
   }
   else if (keyCode === RIGHT_ARROW) {
     mixerTrack.rec.stop();
-    print("stop new");
+    print("stop");
   }
   else if (keyCode === UP_ARROW) {
-  	var url;
-  	mixerTrack.rec.exportWAV(function(blob){
-  		print("IN"); 
+  	print("save");
+  	mixerTrack.rec.exportWAV(function(blob){  		 
     	mixerTrack.rec.clear();
-	    Recorder.forceDownload(blob, "filename.wav");
-	    console.log(blob);
-
-	    url = (window.URL || window.webkitURL).createObjectURL(blob);
-	    
-	    /*var link = window.document.createElement('a');
-	    link.href = url;
-	    link.download = 'output.wav';
-	    //link.onclick = destroyClickedElement;
-	    link.style.display = 'none';
-	    document.body.appendChild(link);
-	    link.click();  
-
-	    window.open(url,'_blank');*/
-	});
-    print("save new");    
-
-    /*var url = (window.URL || window.webkitURL).createObjectURL(this.blob);
-    print("url:");
-    print(url);
-    var link = window.document.createElement('a');
-    link.href = url;
-    link.download = 'output.wav';
-    //link.onclick = destroyClickedElement;
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();  */
-
-   
+	    Recorder.forceDownload(blob, "filename.wav");	    
+	});   
   }
   else if (keyCode === DOWN_ARROW) {
     cLines = cTriangle;
