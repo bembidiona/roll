@@ -54,8 +54,6 @@ var btnImg_saw;
 var btnImg_sine;
 var btnImg_square;
 var btnImg_triangle;
-var btnImg_paint;
-var btnImg_erase;
 var btnImg_clear;
 var btnImg_stop;
 var btnImg_save;
@@ -132,9 +130,7 @@ function setup() {
 	
   	angleMode(RADIANS);
 
-  	btnImg_paint = loadImage("img/brush.png");
-	btnImg_erase = loadImage("img/eraser.png");
-	btnImg_clear = loadImage("img/delete-forever.png");
+  	btnImg_clear = loadImage("img/delete-forever.png");
 	btnImg_stop = loadImage("img/pause.png");
 	btnImg_save = loadImage("img/png.png");
 	btnImg_record = loadImage("img/wav.png");		
@@ -910,9 +906,7 @@ function Boton(_x, _y, _tipo) {
     this.tipo = _tipo;   
     this.icon;
 
-    if(this.tipo == "paint") this.icon = btnImg_paint;
-    else if(this.tipo == "erase") this.icon = btnImg_erase;
-    else if(this.tipo == "clear") this.icon = btnImg_clear;
+    if(this.tipo == "clear") this.icon = btnImg_clear;
 	else if(this.tipo == "stop") this.icon = btnImg_stop;
 	else if(this.tipo == "save") this.icon = btnImg_save;
 	else if(this.tipo == "record") this.icon = btnImg_record;
