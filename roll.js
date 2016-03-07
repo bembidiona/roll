@@ -27,7 +27,7 @@ var cBorder;
 var cOver;
 var cSaw, cSine, cSquare, cTriangle;
 
-
+var isRecording;
 
 var oscilatorsFreq_saw = [];
 var polyNum_saw; 
@@ -136,7 +136,8 @@ function setup() {
 	btnImg_erase = loadImage("img/eraser.png");
 	btnImg_clear = loadImage("img/new.png");
 	btnImg_stop = loadImage("img/pause.png");
-	btnImg_save = loadImage("img/download.png");	
+	btnImg_save = loadImage("img/download.png");
+	btnImg_record = loadImage("img/record.png");		
 	btnImg_help = loadImage("img/helpy.png");
 
 	btnImg_rtrain = loadImage("img/cached.png");
@@ -619,9 +620,9 @@ function draw() {
 	
 	for (var i=0; i < buttons.length; i++) {
 		if(i <= 3) buttons[i].setPosition(margen, i * (buttonSize + margen) + margen);
-		else if(i <= 6) buttons[i].setPosition(windowWidth - buttonSize - margen, (i - 3)* (buttonSize + margen) + margen);
-		else if (i == 7) buttons[i].setPosition(margen, windowHeight - margen - buttonSize); 
-		else if (i == 8) buttons[i].setPosition(windowWidth - buttonSize - margen, margen);
+		else if(i <= 7) buttons[i].setPosition(windowWidth - buttonSize - margen, (i - 3)* (buttonSize + margen) + margen);
+		else if (i == 8) buttons[i].setPosition(margen, windowHeight - margen - buttonSize); 
+		else if (i == 9) buttons[i].setPosition(windowWidth - buttonSize - margen, margen);
 
     	buttons[i].display();    	    	 	
     }
@@ -672,7 +673,7 @@ function createMiniCanvases() {
 function isOnUI() {
 	if (mouseX < uiWidth) return true;
 	else if(mouseX < uiWidth + sliderSize + buttonSize && mouseY > windowHeight - buttonSize - margen) return true; //downslider
-	else if(mouseX > windowWidth - buttonSize - margen && mouseY < (buttonSize + margen)*4) return true; //right buttons
+	else if(mouseX > windowWidth - buttonSize - margen && mouseY < (buttonSize + margen)*5) return true; //right buttons
 	else if(mouseX > windowWidth - buttonSize - margen && mouseY > windowHeight - buttonSize*4 - margen*2) return true;
 	else return false;
 }
@@ -916,6 +917,7 @@ function Boton(_x, _y, _tipo) {
     else if(this.tipo == "clear") this.icon = btnImg_clear;
 	else if(this.tipo == "stop") this.icon = btnImg_stop;
 	else if(this.tipo == "save") this.icon = btnImg_save;
+	else if(this.tipo == "record") this.icon = btnImg_record;
 	else if(this.tipo == "help") this.icon = btnImg_help;
 	else if(this.tipo == "fullscreen") this.icon = btnImg_fullscreen;
 	else if(this.tipo == "saw") this.icon = btnImg_saw;
@@ -946,6 +948,13 @@ function Boton(_x, _y, _tipo) {
 
     	image(this.icon, this.x + buttonSize/2 - this.icon.width/2, this.y + buttonSize/2 - this.icon.height/2);
 
+    	if(this.tipo == "record"){
+    		if(isRecording){
+    			stroke(255,0,0);
+    			rect(this.x, this.y, this.w, this.h);	
+    		}    		
+    	}
+
     	if(helpShow){
     		textAlign(LEFT, CENTER);
     		noStroke();
@@ -962,6 +971,7 @@ function Boton(_x, _y, _tipo) {
 			textAlign(RIGHT, CENTER);
 			if(this.tipo == "clear") text("new canvas", this.x, this.y + buttonSize/2+fix);
 			else if(this.tipo == "save") text("\n save canvas\n [drop .png to load]", this.x, this.y + buttonSize/2 - 21);
+			else if(this.tipo == "record") text("record/export audio", this.x, this.y + buttonSize/2 +fix);
 			else if(this.tipo == "help") text("help/about", this.x, this.y + buttonSize/2+fix);
 			else if(this.tipo == "fullscreen") text("go fullscreen", this.x, this.y + buttonSize/2+fix);
     	}    	
@@ -1003,6 +1013,23 @@ function Boton(_x, _y, _tipo) {
     		}
     		else if(this.tipo == "save"){
     			savingScore = true;    			
+    		}
+    		else if(this.tipo == "record"){
+    			if(isRecording){
+    				//stop and export
+    				isRecording = false;
+    				mixerTrack.rec.stop();
+    				mixerTrack.rec.exportWAV(function(blob){  		 
+				    	mixerTrack.rec.clear();
+					    Recorder.forceDownload(blob, "filename.wav");	    
+						}
+					);
+    			}
+    			else{
+    				//start recording
+    				isRecording = true;
+    				mixerTrack.rec.record();
+    			}    			    			
     		}
     		else if(this.tipo == "help"){
     			helpShow = !helpShow;
@@ -1065,7 +1092,7 @@ function windowResized() {
 }
 
 function keyPressed() {
-  if (keyCode === LEFT_ARROW) {
+  /*if (keyCode === LEFT_ARROW) {
     mixerTrack.rec.record();
     print("record");
   }
@@ -1082,7 +1109,7 @@ function keyPressed() {
   }
   else if (keyCode === DOWN_ARROW) {
     cLines = cTriangle;
-  }
+  }*/
 }
 
 
