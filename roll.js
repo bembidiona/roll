@@ -1,6 +1,3 @@
-var WEBGL = false;
-
-
 var appName = "r o l l "
 var appVersion = "v0.2";
 
@@ -52,8 +49,7 @@ var sliders = [];
 
 var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
-if(WEBGL) var buttonsTypes = ["paint", "erase", "clear", "save", "help", "stop"];
-else var buttonsTypes = ["saw", "sine", "square", "triangle", "clear", "save", "help", "stop"];
+var buttonsTypes = ["saw", "sine", "square", "triangle", "clear", "save", "help", "stop"];
 var btnImg_saw;
 var btnImg_sine;
 var btnImg_square;
@@ -68,6 +64,7 @@ var btnImg_rtrain;
 var btnImg_xtrain;
 var btnImg_volume;
 var btnImg_fullscreen;
+var btnImg_record;
 var sliderSize = 90;
 
 var collisionPoints = [];
@@ -124,7 +121,7 @@ function setup() {
 
 	colorKey = green(cLines);
 
-	c = createCanvas(windowWidth, windowHeight, WEBGL);	
+	c = createCanvas(windowWidth, windowHeight, 'WEBGL');	
 	c.drop(gotFileHack); 
 
 	windowWidth = windowWidth;
@@ -231,9 +228,8 @@ function draw() {
 	image(pg, windowWidth + trainX, 0);
 	//blendMode(NORMAL);
 
-	var listenerImg
-	if(WEBGL) listenerImg = get(windowWidth/2, 0, 4, windowHeight);
-	else listenerImg = get(windowWidth/2 - 2, 0, 4, windowHeight);
+	
+	var listenerImg = get(windowWidth/2 - 2, 0, 4, windowHeight);
 
 	strokeWeight(0.2);
 	stroke(cGrid);
