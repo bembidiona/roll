@@ -134,10 +134,10 @@ function setup() {
 
   	btnImg_paint = loadImage("img/brush.png");
 	btnImg_erase = loadImage("img/eraser.png");
-	btnImg_clear = loadImage("img/new.png");
+	btnImg_clear = loadImage("img/delete-forever.png");
 	btnImg_stop = loadImage("img/pause.png");
-	btnImg_save = loadImage("img/download.png");
-	btnImg_record = loadImage("img/record.png");		
+	btnImg_save = loadImage("img/png.png");
+	btnImg_record = loadImage("img/wav.png");		
 	btnImg_help = loadImage("img/helpy.png");
 
 	btnImg_rtrain = loadImage("img/cached.png");
@@ -1019,7 +1019,7 @@ function Boton(_x, _y, _tipo) {
     				mixerTrack.rec.stop();
     				mixerTrack.rec.exportWAV(function(blob){  		 
 				    	mixerTrack.rec.clear();
-					    Recorder.forceDownload(blob, "filename.wav");	    
+					    Recorder.forceDownload(blob, "roll-output.wav");	    
 						}
 					);
     			}
